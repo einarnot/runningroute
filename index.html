@@ -122,14 +122,6 @@
                         <span class="info-value" id="routeScore">-</span>
                     </div>
                 </div>
-
-                <!-- Route Alternatives Panel -->
-                <div class="route-alternatives" id="routeAlternatives" style="display: none;">
-                    <h3>Route Alternatives</h3>
-                    <div class="alternatives-list" id="alternativesList">
-                        <!-- Route cards will be dynamically inserted here -->
-                    </div>
-                </div>
             </aside>
 
             <!-- Map Container -->
@@ -138,6 +130,21 @@
                 <button class="mobile-menu-btn" id="mobileMenuBtn">
                     <span class="hamburger-icon">☰</span>
                 </button>
+
+                <!-- Route Carousel -->
+                <div class="route-carousel" id="routeCarousel" style="display: none;">
+                    <div class="carousel-header">
+                        <span class="carousel-title">Route Options</span>
+                        <button class="carousel-close" id="carouselClose">×</button>
+                    </div>
+                    <div class="carousel-container">
+                        <button class="carousel-nav carousel-prev" id="carouselPrev">‹</button>
+                        <div class="carousel-track" id="carouselTrack">
+                            <!-- Route tiles will be dynamically inserted here -->
+                        </div>
+                        <button class="carousel-nav carousel-next" id="carouselNext">›</button>
+                    </div>
+                </div>
                 
                 <div id="map" class="map"></div>
                 

@@ -5,21 +5,54 @@ class RouteSelector {
     constructor() {
         this.routes = [];
         this.selectedRouteIndex = 0;
-        this.alternativesPanel = null;
-        this.alternativesList = null;
+        this.carousel = null;
+        this.carouselTrack = null;
+        this.carouselPrev = null;
+        this.carouselNext = null;
+        this.carouselClose = null;
     }
 
     // Initialize the route selector
     init() {
-        this.alternativesPanel = document.getElementById('routeAlternatives');
-        this.alternativesList = document.getElementById('alternativesList');
+        this.carousel = document.getElementById('routeCarousel');
+        this.carouselTrack = document.getElementById('carouselTrack');
+        this.carouselPrev = document.getElementById('carouselPrev');
+        this.carouselNext = document.getElementById('carouselNext');
+        this.carouselClose = document.getElementById('carouselClose');
         
-        if (!this.alternativesPanel || !this.alternativesList) {
-            console.error('Route selector elements not found in DOM');
+        if (!this.carousel || !this.carouselTrack) {
+            console.error('Route carousel elements not found in DOM');
             return false;
         }
         
+        this.setupCarouselControls();
         return true;
+    }
+
+    // Setup carousel navigation controls
+    setupCarouselControls() {
+        // Previous button
+        if (this.carouselPrev) {
+            this.carouselPrev.addEventListener('click', () => this.scrollPrevious());
+        }
+
+        // Next button
+        if (this.carouselNext) {
+            this.carouselNext.addEventListener('click', () => this.scrollNext());
+        }
+
+        // Close button
+        if (this.carouselClose) {
+            this.carouselClose.addEventListener('click', () => this.hideCarousel());
+        }
+
+        // Track scroll events to update navigation buttons
+        if (this.carouselTrack) {
+            this.carouselTrack.addEventListener('scroll', () => this.updateNavButtons());
+            
+            // Add touch/swipe support for mobile
+            this.setupTouchSupport();
+        }
     }
 
     // Display route alternatives sorted by score
@@ -31,81 +64,79 @@ class RouteSelector {
         this.selectedRouteIndex = 0; // Select best route by default
 
         if (this.routes.length === 0) {
-            this.hideAlternatives();
+            this.hideCarousel();
             return;
         }
 
-        // Generate route cards
-        this.renderRouteCards();
+        // Generate route tiles
+        this.renderRouteTiles();
         
-        // Show the alternatives panel
-        this.showAlternatives();
+        // Show the carousel
+        this.showCarousel();
 
         // Notify of initial selection
         this.onRouteSelected(0);
     }
 
-    // Render route cards in the alternatives list
-    renderRouteCards() {
-        if (!this.alternativesList) return;
+    // Render route tiles in the carousel
+    renderRouteTiles() {
+        if (!this.carouselTrack) return;
 
-        this.alternativesList.innerHTML = '';
+        this.carouselTrack.innerHTML = '';
 
         this.routes.forEach((route, index) => {
-            const card = this.createRouteCard(route, index);
-            this.alternativesList.appendChild(card);
+            const tile = this.createRouteTile(route, index);
+            this.carouselTrack.appendChild(tile);
         });
+
+        // Update navigation buttons
+        this.updateNavButtons();
     }
 
-    // Create a single route card element
-    createRouteCard(route, index) {
-        const card = document.createElement('div');
-        card.className = `route-card ${index === this.selectedRouteIndex ? 'selected' : ''}`;
-        card.setAttribute('data-route-index', index);
+    // Create a single route tile element
+    createRouteTile(route, index) {
+        const tile = document.createElement('div');
+        tile.className = `route-tile ${index === this.selectedRouteIndex ? 'selected' : ''}`;
+        tile.setAttribute('data-route-index', index);
 
         // Format route data
-        const distance = route.distance ? `${route.distance.toFixed(1)} km` : 'N/A';
-        const elevation = route.ascent ? `${Math.round(route.ascent)} m` : 'N/A';
+        const distance = route.distance ? `${route.distance.toFixed(1)}km` : 'N/A';
+        const elevation = route.ascent ? `${Math.round(route.ascent)}m` : 'N/A';
         const duration = route.duration ? this.formatDuration(route.duration) : 'N/A';
         const score = route.aiScore ? `${Math.round(route.aiScore * 100)}%` : 'N/A';
-        const scoreLabel = route.usedAI ? 'AI Score' : 'Score';
+        const scoreLabel = route.usedAI ? 'AI' : 'Score';
 
-        card.innerHTML = `
-            <div class="route-card-header">
+        tile.innerHTML = `
+            <div class="route-tile-header">
                 <div class="route-rank">${index + 1}</div>
                 <div class="route-score">${scoreLabel}: ${score}</div>
             </div>
-            <div class="route-card-stats">
+            <div class="route-tile-stats">
                 <div class="route-stat">
-                    <span class="route-stat-label">Distance</span>
-                    <span class="route-stat-value">${distance}</span>
+                    <div class="route-stat-label">Distance</div>
+                    <div class="route-stat-value">${distance}</div>
                 </div>
                 <div class="route-stat">
-                    <span class="route-stat-label">Elevation</span>
-                    <span class="route-stat-value">${elevation}</span>
+                    <div class="route-stat-label">Elevation</div>
+                    <div class="route-stat-value">${elevation}</div>
                 </div>
                 <div class="route-stat">
-                    <span class="route-stat-label">Duration</span>
-                    <span class="route-stat-value">${duration}</span>
+                    <div class="route-stat-label">Duration</div>
+                    <div class="route-stat-value">${duration}</div>
                 </div>
                 <div class="route-stat">
-                    <span class="route-stat-label">Type</span>
-                    <span class="route-stat-value">${route.type || 'Loop'}</span>
+                    <div class="route-stat-label">Type</div>
+                    <div class="route-stat-value">${route.type || 'Loop'}</div>
                 </div>
             </div>
-            ${route.aiReasoning ? `
-                <div class="route-card-reasoning">
-                    ${route.aiReasoning}
-                </div>
-            ` : ''}
         `;
 
         // Add click handler
-        card.addEventListener('click', () => {
+        tile.addEventListener('click', () => {
             this.selectRoute(index);
         });
 
-        return card;
+        return tile;
     }
 
     // Select a route by index
@@ -123,18 +154,21 @@ class RouteSelector {
         this.onRouteSelected(index);
     }
 
-    // Update visual selection of cards
+    // Update visual selection of tiles
     updateCardSelection(previousIndex, newIndex) {
-        const cards = this.alternativesList.querySelectorAll('.route-card');
+        const tiles = this.carouselTrack.querySelectorAll('.route-tile');
         
         // Remove previous selection
-        if (cards[previousIndex]) {
-            cards[previousIndex].classList.remove('selected');
+        if (tiles[previousIndex]) {
+            tiles[previousIndex].classList.remove('selected');
         }
 
         // Add new selection
-        if (cards[newIndex]) {
-            cards[newIndex].classList.add('selected');
+        if (tiles[newIndex]) {
+            tiles[newIndex].classList.add('selected');
+            
+            // Scroll selected tile into view
+            this.scrollToTile(newIndex);
         }
     }
 
@@ -180,17 +214,124 @@ class RouteSelector {
         }
     }
 
-    // Show alternatives panel
-    showAlternatives() {
-        if (this.alternativesPanel) {
-            this.alternativesPanel.style.display = 'block';
+    // Carousel navigation methods
+    scrollPrevious() {
+        if (this.carouselTrack) {
+            const scrollAmount = 220; // Slightly more than tile width
+            this.carouselTrack.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
         }
     }
 
-    // Hide alternatives panel
-    hideAlternatives() {
-        if (this.alternativesPanel) {
-            this.alternativesPanel.style.display = 'none';
+    scrollNext() {
+        if (this.carouselTrack) {
+            const scrollAmount = 220; // Slightly more than tile width
+            this.carouselTrack.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+        }
+    }
+
+    scrollToTile(index) {
+        if (this.carouselTrack && index >= 0 && index < this.routes.length) {
+            const tiles = this.carouselTrack.querySelectorAll('.route-tile');
+            if (tiles[index]) {
+                tiles[index].scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'nearest',
+                    inline: 'center'
+                });
+            }
+        }
+    }
+
+    updateNavButtons() {
+        if (!this.carouselTrack || !this.carouselPrev || !this.carouselNext) return;
+
+        const { scrollLeft, scrollWidth, clientWidth } = this.carouselTrack;
+        
+        // Disable/enable previous button
+        this.carouselPrev.disabled = scrollLeft <= 0;
+        
+        // Disable/enable next button  
+        this.carouselNext.disabled = scrollLeft >= scrollWidth - clientWidth - 1;
+    }
+
+    // Setup touch/swipe support for mobile
+    setupTouchSupport() {
+        if (!this.carouselTrack) return;
+
+        let startX = null;
+        let startScrollLeft = null;
+        let isDragging = false;
+
+        // Touch start
+        this.carouselTrack.addEventListener('touchstart', (e) => {
+            startX = e.touches[0].clientX;
+            startScrollLeft = this.carouselTrack.scrollLeft;
+            isDragging = true;
+        }, { passive: true });
+
+        // Touch move
+        this.carouselTrack.addEventListener('touchmove', (e) => {
+            if (!isDragging || startX === null) return;
+            
+            const touchX = e.touches[0].clientX;
+            const deltaX = startX - touchX;
+            this.carouselTrack.scrollLeft = startScrollLeft + deltaX;
+        }, { passive: true });
+
+        // Touch end
+        this.carouselTrack.addEventListener('touchend', () => {
+            isDragging = false;
+            startX = null;
+            startScrollLeft = null;
+        }, { passive: true });
+
+        // Mouse events for desktop drag support
+        this.carouselTrack.addEventListener('mousedown', (e) => {
+            startX = e.clientX;
+            startScrollLeft = this.carouselTrack.scrollLeft;
+            isDragging = true;
+            this.carouselTrack.style.cursor = 'grabbing';
+        });
+
+        this.carouselTrack.addEventListener('mousemove', (e) => {
+            if (!isDragging || startX === null) return;
+            
+            e.preventDefault();
+            const deltaX = startX - e.clientX;
+            this.carouselTrack.scrollLeft = startScrollLeft + deltaX;
+        });
+
+        this.carouselTrack.addEventListener('mouseup', () => {
+            isDragging = false;
+            startX = null;
+            startScrollLeft = null;
+            this.carouselTrack.style.cursor = 'grab';
+        });
+
+        this.carouselTrack.addEventListener('mouseleave', () => {
+            isDragging = false;
+            startX = null;
+            startScrollLeft = null;
+            this.carouselTrack.style.cursor = 'grab';
+        });
+
+        // Set initial cursor
+        this.carouselTrack.style.cursor = 'grab';
+    }
+
+    // Show carousel
+    showCarousel() {
+        if (this.carousel) {
+            this.carousel.style.display = 'block';
+            // Update nav buttons after showing
+            setTimeout(() => this.updateNavButtons(), 100);
+        }
+    }
+
+    // Hide carousel
+    hideCarousel() {
+        if (this.carousel) {
+            this.carousel.style.display = 'none';
         }
     }
 
@@ -214,11 +355,11 @@ class RouteSelector {
         this.routes = [];
         this.selectedRouteIndex = 0;
         
-        if (this.alternativesList) {
-            this.alternativesList.innerHTML = '';
+        if (this.carouselTrack) {
+            this.carouselTrack.innerHTML = '';
         }
         
-        this.hideAlternatives();
+        this.hideCarousel();
     }
 
     // Get component stats for debugging
@@ -227,8 +368,8 @@ class RouteSelector {
             routeCount: this.routes.length,
             selectedIndex: this.selectedRouteIndex,
             selectedRoute: this.getSelectedRoute(),
-            isVisible: this.alternativesPanel ? 
-                this.alternativesPanel.style.display !== 'none' : false
+            isVisible: this.carousel ? 
+                this.carousel.style.display !== 'none' : false
         };
     }
 }

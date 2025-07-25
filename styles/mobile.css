@@ -131,6 +131,33 @@
         visibility: visible;
     }
     
+    /* Mobile Route Carousel */
+    .route-carousel {
+        top: var(--spacing-sm);
+        left: var(--spacing-sm);
+        right: var(--spacing-sm);
+    }
+    
+    .carousel-container {
+        padding: var(--spacing-xs);
+        gap: var(--spacing-xs);
+    }
+    
+    .carousel-nav {
+        width: 28px;
+        height: 28px;
+        font-size: var(--font-size-md);
+    }
+    
+    .route-tile {
+        min-width: 160px;
+        padding: var(--spacing-xs);
+    }
+    
+    .route-tile-stats {
+        gap: 4px;
+    }
+    
     /* Mobile Form Adjustments */
     .preferences-form {
         padding: var(--spacing-md);
