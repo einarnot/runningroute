@@ -118,6 +118,10 @@ class App {
             locationInput.addEventListener('blur', () => {
                 this.updatePreferences();
             });
+            
+            locationInput.addEventListener('change', () => {
+                this.updatePreferences();
+            });
         }
     }
 

@@ -147,7 +147,7 @@ class MapController {
     // Center map on user's current location
     async centerOnUserLocation() {
         try {
-            const position = await LocationService.getCurrentLocation();
+            const position = await window.LocationService.getCurrentLocation();
             
             if (position && this.map) {
                 this.map.setView([position.lat, position.lon], this.defaultZoom);
@@ -157,6 +157,10 @@ class MapController {
                 const locationInput = document.getElementById('startLocation');
                 if (locationInput) {
                     locationInput.value = `${position.lat.toFixed(6)}, ${position.lon.toFixed(6)}`;
+                    
+                    // Trigger a change event to update app preferences
+                    const event = new Event('change', { bubbles: true });
+                    locationInput.dispatchEvent(event);
                 }
             }
         } catch (error) {

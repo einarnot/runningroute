@@ -58,16 +58,20 @@ class RouteGenerator {
         };
 
         // Validate start location
-        if (preferences.startLocation) {
+        if (preferences.startLocation && preferences.startLocation.trim() !== '') {
             const coords = this.parseLocationInput(preferences.startLocation);
             if (coords) {
-                validated.startLat = coords.lat;
-                validated.startLon = coords.lon;
+                if (coords.lat !== undefined && coords.lon !== undefined) {
+                    validated.startLat = coords.lat;
+                    validated.startLon = coords.lon;
+                } else if (coords.address) {
+                    validated.startAddress = coords.address;
+                }
             } else {
                 throw new Error('Invalid starting location. Please enter valid coordinates or address.');
             }
         } else {
-            throw new Error('Starting location is required');
+            throw new Error('Starting location is required. Please enter an address or click on the map.');
         }
 
         // Validate distance
@@ -118,7 +122,7 @@ class RouteGenerator {
         const requestData = {
             startLat: preferences.startLat,
             startLon: preferences.startLon,
-            startAddress: preferences.address,
+            startAddress: preferences.startAddress,
             distance: preferences.distance,
             routeType: preferences.routeType,
             terrain: preferences.terrain,
