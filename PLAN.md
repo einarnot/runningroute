@@ -90,8 +90,8 @@ Build an intelligent web application that generates optimized running routes usi
 - Display routes with elevation coloring
 - Handle user interactions (location selection)
 - Manage route overlays and markers
-- **NEW**: Support switching between multiple route visualizations
-- **NEW**: Highlight selected route vs alternatives
+- Support switching between multiple route visualizations
+- Highlight selected route vs alternatives
 
 #### 5. Elevation Service (`elevationService.js`)
 - Sample routes at regular intervals (50m)
@@ -133,8 +133,8 @@ const evaluationCriteria = {
 1. User inputs preferences → Frontend validation
 2. Generate 10+ route alternatives → OpenRouteService API
 3. Evaluate routes with AI → AI Service API
-4. **NEW**: Display all routes sorted by score → Route selection UI
-5. **NEW**: User selects preferred route → Update map and info panel
+4. Display all routes sorted by score → Route selection UI
+5. User selects preferred route → Update map and info panel
 7. Color-code route segments → Render final route
 
 ## Implementation Plan
@@ -163,10 +163,10 @@ const evaluationCriteria = {
 - [ ] Create route coloring based on gradients
 - [ ] Add elevation markers and route information
 - [ ] Build responsive UI matching design mockups
-- [ ] **NEW**: Create route alternatives selection panel
-- [ ] **NEW**: Implement route preview cards with stats
-- [ ] **NEW**: Add route switching functionality in UI
-- [ ] **NEW**: Sort and display all routes by AI/evaluation score
+- [x] Create route alternatives selection panel
+- [x] Implement route preview cards with stats
+- [x] Add route switching functionality in UI
+- [x] Sort and display all routes by AI/evaluation score
 
 ### Phase 5: User Experience
 - [ ] Add location detection and address search

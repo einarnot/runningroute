@@ -27,19 +27,22 @@ class RouteGenerator {
             // Evaluate routes with AI
             const evaluatedRoutes = await this.evaluateRoutesWithAI(routes, validatedPrefs);
             
-            // Select the best route
-            const bestRoute = this.selectBestRoute(evaluatedRoutes);
-            
-            if (!bestRoute) {
-                throw new Error('Could not find a suitable route');
+            if (!evaluatedRoutes || evaluatedRoutes.length === 0) {
+                throw new Error('Could not evaluate routes');
             }
 
-            // Enhance route with elevation data
-            const enhancedRoute = await this.enhanceRouteWithElevation(bestRoute);
+            // Sort routes by score for consistent ordering
+            const sortedRoutes = evaluatedRoutes.sort((a, b) => (b.aiScore || 0) - (a.aiScore || 0));
+
+            // Enhance all routes with elevation data (for the best route only, others enhanced on selection)
+            if (sortedRoutes.length > 0) {
+                sortedRoutes[0] = await this.enhanceRouteWithElevation(sortedRoutes[0]);
+                sortedRoutes[0].enhanced = true;
+            }
             
             window.Utils.showLoading(false);
             
-            return enhancedRoute;
+            return sortedRoutes;
         } catch (error) {
             window.Utils.showLoading(false);
             console.error('Route generation failed:', error);
@@ -267,6 +270,22 @@ class RouteGenerator {
         
         // Return the best route
         return sortedRoutes[0];
+    }
+
+    // Enhance a route on-demand (when selected by user)
+    async enhanceRouteOnDemand(route) {
+        if (route.enhanced) {
+            return route; // Already enhanced
+        }
+        
+        try {
+            const enhancedRoute = await this.enhanceRouteWithElevation(route);
+            enhancedRoute.enhanced = true;
+            return enhancedRoute;
+        } catch (error) {
+            console.warn('Failed to enhance route with elevation:', error);
+            return route; // Return original route if enhancement fails
+        }
     }
 
     // Enhance route with elevation data

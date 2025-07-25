@@ -28,6 +28,9 @@ class App {
             // Setup mobile responsiveness
             this.setupMobileFeatures();
             
+            // Setup route selection handling
+            this.setupRouteSelectionHandlers();
+            
             // Load saved preferences
             this.loadSavedPreferences();
             
@@ -217,6 +220,36 @@ class App {
         }
     }
 
+    // Setup route selection event handlers
+    setupRouteSelectionHandlers() {
+        // Listen for route selection events from RouteSelector
+        document.addEventListener('routeSelected', async (event) => {
+            const { route, index } = event.detail;
+            
+            try {
+                // Enhance route with elevation data if not already enhanced
+                const enhancedRoute = await window.RouteGenerator.enhanceRouteOnDemand(route);
+                
+                // Update current route
+                this.currentRoute = enhancedRoute;
+                
+                // Update map display
+                window.MapController.displayRoute(enhancedRoute);
+                
+                // Update route info panel
+                this.updateRouteInfoPanel(enhancedRoute);
+                
+                console.log(`Switched to route ${index + 1}:`, enhancedRoute);
+            } catch (error) {
+                console.error('Failed to switch route:', error);
+                // Still update with original route if enhancement fails
+                this.currentRoute = route;
+                window.MapController.displayRoute(route);
+                this.updateRouteInfoPanel(route);
+            }
+        });
+    }
+
     // Setup mobile-specific features
     setupMobileFeatures() {
         // Detect mobile and add appropriate classes
@@ -279,17 +312,21 @@ class App {
             // Set generating state
             this.setGeneratingState(true);
 
-            // Generate route
-            const route = await window.RouteGenerator.generateRoutes(this.preferences);
+            // Generate routes (now returns array of all routes)
+            const routes = await window.RouteGenerator.generateRoutes(this.preferences);
             
-            if (route) {
-                this.currentRoute = route;
+            if (routes && routes.length > 0) {
+                // Display all routes in selector (best route is selected by default)
+                window.RouteSelector.displayRoutes(routes);
                 
-                // Display route on map
-                window.MapController.displayRoute(route);
+                // Set current route to the best one (first in sorted array)
+                this.currentRoute = routes[0];
+                
+                // Display best route on map
+                window.MapController.displayRoute(routes[0]);
                 
                 // Update route info panel
-                this.updateRouteInfoPanel(route);
+                this.updateRouteInfoPanel(routes[0]);
                 
                 // Close mobile sidebar if open
                 if (window.Utils.isMobile()) {
@@ -303,7 +340,7 @@ class App {
                 // Save preferences
                 this.savePreferences();
 
-                console.log('Route generated successfully:', route);
+                console.log(`${routes.length} routes generated successfully. Best route:`, routes[0]);
             }
         } catch (error) {
             console.error('Route generation failed:', error);
@@ -509,6 +546,9 @@ class App {
     clearRoute() {
         this.currentRoute = null;
         window.MapController.clearRoute();
+        
+        // Clear route selector
+        window.RouteSelector.clear();
         
         // Hide route info panel
         const routeInfo = document.getElementById('routeInfo');
