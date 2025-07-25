@@ -156,7 +156,10 @@ async function generateSingleRoute(startLat, startLon, distance, routeType, pref
       format: 'json',
       elevation: true,
       extra_info: ['steepness'],
-      instructions: false
+      instructions: false,
+      options: {
+        avoid_features: ['ferries']
+      }
     })
   });
   
