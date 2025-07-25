@@ -184,7 +184,7 @@ class RouteGenerator {
 
                 if (response.success) {
                     // Merge AI evaluations with original route data
-                    return this.mergeRouteEvaluations(routes, response.data.evaluations);
+                    return this.mergeRouteEvaluations(routes, response.data.evaluations, response.data.usedAI);
                 } else {
                     throw new Error(response.error.message || 'Route evaluation failed');
                 }
@@ -203,7 +203,7 @@ class RouteGenerator {
     }
 
     // Merge AI evaluations with route data
-    mergeRouteEvaluations(routes, evaluations) {
+    mergeRouteEvaluations(routes, evaluations, usedAI = false) {
         return routes.map(route => {
             const evaluation = evaluations.find(evaluation => 
                 evaluation.routeId === route.id || 
@@ -214,6 +214,7 @@ class RouteGenerator {
                 ...route,
                 aiScore: evaluation?.score || 0,
                 aiReasoning: evaluation?.reasoning || '',
+                usedAI: usedAI,
                 distanceAccuracy: evaluation?.criteria?.distanceAccuracy || 0,
                 terrainMatch: evaluation?.criteria?.terrainMatch || 0,
                 safetyScore: evaluation?.criteria?.safetyScore || 0,
@@ -245,6 +246,7 @@ class RouteGenerator {
                 id: route.id || window.Utils.generateId(),
                 aiScore: overallScore,
                 aiReasoning: 'Basic distance and terrain matching (AI unavailable)',
+                usedAI: false,
                 distanceAccuracy: distanceScore,
                 terrainMatch: terrainScore,
                 safetyScore: 0.5,

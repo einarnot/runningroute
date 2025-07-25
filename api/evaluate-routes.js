@@ -21,21 +21,24 @@ export default async function handler(req, res) {
   try {
     // Try AI evaluation first, but fallback to local scoring
     let evaluations;
+    let usedAI = false;
     
     try {
       evaluations = await evaluateWithAI(routes, preferences);
+      usedAI = true;
     } catch (aiError) {
       console.log('AI evaluation failed, using fallback scoring:', aiError.message);
       evaluations = evaluateWithFallback(routes, preferences);
+      usedAI = false;
     }
     
-    res.status(200).json({ evaluations });
+    res.status(200).json({ evaluations, usedAI });
   } catch (error) {
     console.error('Route evaluation error:', error);
     
     // Last resort fallback
     const fallbackEvaluations = evaluateWithFallback(routes, preferences);
-    res.status(200).json({ evaluations: fallbackEvaluations });
+    res.status(200).json({ evaluations: fallbackEvaluations, usedAI: false });
   }
 }
 

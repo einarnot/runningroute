@@ -389,6 +389,12 @@ class App {
                 element.textContent = value;
             }
         });
+
+        // Update score label based on whether AI was used
+        const scoreLabel = document.getElementById('routeScoreLabel');
+        if (scoreLabel && route.usedAI !== undefined) {
+            scoreLabel.textContent = route.usedAI ? 'AI Score:' : 'Score:';
+        }
     }
 
     // Set generating state (loading/disabled buttons)
