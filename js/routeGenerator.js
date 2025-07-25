@@ -201,9 +201,9 @@ class RouteGenerator {
     // Merge AI evaluations with route data
     mergeRouteEvaluations(routes, evaluations) {
         return routes.map(route => {
-            const evaluation = evaluations.find(eval => 
-                eval.routeId === route.id || 
-                eval.routeId === routes.indexOf(route)
+            const evaluation = evaluations.find(evaluation => 
+                evaluation.routeId === route.id || 
+                evaluation.routeId === routes.indexOf(route)
             );
 
             return {
