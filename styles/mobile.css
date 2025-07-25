@@ -57,6 +57,48 @@
         display: block;
     }
     
+    /* Mobile Menu Button */
+    .mobile-menu-btn {
+        position: absolute;
+        top: var(--spacing-md);
+        left: var(--spacing-md);
+        z-index: 1200;
+        background-color: var(--background-main);
+        border: var(--border-width) solid var(--gray-medium);
+        border-radius: var(--border-radius);
+        padding: var(--spacing-sm);
+        font-size: var(--font-size-lg);
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        transition: all 0.2s ease;
+        display: none; /* Hidden by default, shown on mobile */
+    }
+    
+    .mobile-menu-btn:hover {
+        background-color: var(--gray-light);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    
+    .mobile-menu-btn:active {
+        transform: translateY(0);
+    }
+    
+    .hamburger-icon {
+        display: block;
+        line-height: 1;
+    }
+    
+    /* Show mobile menu button on mobile */
+    body.mobile .mobile-menu-btn {
+        display: block;
+    }
+    
+    /* Hide mobile menu button when sidebar is open */
+    .sidebar.open ~ .map-container .mobile-menu-btn {
+        display: none;
+    }
+    
     .sidebar.open .toggle-icon {
         transform: rotate(180deg);
     }

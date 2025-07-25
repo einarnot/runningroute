@@ -152,6 +152,11 @@ body {
     background-color: var(--gray-light);
 }
 
+/* Mobile Menu Button (hidden by default) */
+.mobile-menu-btn {
+    display: none;
+}
+
 /* Map Container */
 .map-container {
     flex: 1;

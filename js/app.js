@@ -208,15 +208,26 @@ class App {
     // Setup mobile sidebar toggle
     setupSidebarToggle() {
         const sidebarToggle = document.getElementById('sidebarToggle');
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
         const sidebar = document.getElementById('sidebar');
 
-        if (sidebarToggle && sidebar) {
-            sidebarToggle.addEventListener('click', () => {
+        // Function to toggle sidebar
+        const toggleSidebar = () => {
+            if (sidebar) {
                 sidebar.classList.toggle('open');
                 
                 // Create/remove backdrop for mobile
                 this.toggleMobileBackdrop(sidebar.classList.contains('open'));
-            });
+            }
+        };
+
+        // Add event listeners to both toggle buttons
+        if (sidebarToggle) {
+            sidebarToggle.addEventListener('click', toggleSidebar);
+        }
+
+        if (mobileMenuBtn) {
+            mobileMenuBtn.addEventListener('click', toggleSidebar);
         }
     }
 
