@@ -240,7 +240,7 @@ class RouteService {
         // Convert waypoints to the format expected by ORS (lng, lat)
         const coordinates = waypoints.map(point => [point[1], point[0]]);
         
-        const profile = terrain === 'hilly' ? 'foot-hiking' : 'foot-walking';
+        const profile = 'foot-walking';
         
         // Request body matching the sample JSON structure
         const requestBody = {

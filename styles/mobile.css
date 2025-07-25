@@ -98,12 +98,15 @@
     .sidebar.open ~ .map-container .mobile-menu-btn {
         display: none;
     }
-    
+
+    /* Hide route carousel when sidebar is open on mobile */
+    .sidebar.open ~ .map-container .route-carousel {
+        display: none !important;
+    }
+
     .sidebar.open .toggle-icon {
         transform: rotate(180deg);
-    }
-    
-    .toggle-icon {
+    }    .toggle-icon {
         transition: transform 0.3s ease;
     }
     

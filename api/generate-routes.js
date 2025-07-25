@@ -184,12 +184,6 @@ async function generateSingleRoute(startLat, startLon, distance, routeType, pref
     
     coordinates.push([startLon, startLat]); // Start point
     
-    // Add intermediate waypoint to create more interesting route
-    const intermediateDistance = straightLineDistance * 0.7;
-    const intermediateLat = startLat + (intermediateDistance / 111.32) * Math.cos(angle);
-    const intermediateLon = startLon + (intermediateDistance / (111.32 * Math.cos(startLat * Math.PI / 180))) * Math.sin(angle);
-    coordinates.push([intermediateLon, intermediateLat]);
-    
     // Destination point
     const destLat = startLat + (straightLineDistance / 111.32) * Math.cos(angle);
     const destLon = startLon + (straightLineDistance / (111.32 * Math.cos(startLat * Math.PI / 180))) * Math.sin(angle);

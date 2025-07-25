@@ -64,10 +64,10 @@ async function evaluateWithAI(routes, preferences) {
         role: 'system',
         content: `You are a running route expert. Evaluate ALL routes provided and return ONLY a valid JSON array with one evaluation object for each route in this exact format:
 [{"routeId": 0, "score": 0.85, "reasoning": "Good distance match", "criteria": {"distanceAccuracy": 0.9, "terrainMatch": 0.8, "safetyScore": 0.7, "scenicValue": 0.6, "navigationEase": 0.8}}, {"routeId": 1, "score": 0.72, "reasoning": "Different route", "criteria": {"distanceAccuracy": 0.8, "terrainMatch": 0.7, "safetyScore": 0.6, "scenicValue": 0.7, "navigationEase": 0.9}}]
-IMPORTANT: Return exactly ${routes.length} evaluation objects, one for each route. Do not use markdown formatting or code blocks. Return only the JSON array.`
+IMPORTANT: Return exactly ${routes.length} evaluation objects, one for each route. Do not use markdown formatting or code blocks. Return only the JSON array. When terrain is set to flat, prioritize low elevation. When terrain is set to hilly, prefer routes with high elevation gain, to the point where elevation is more important than distance desire.`
       }, {
         role: 'user',
-        content: `Evaluate these ${routes.length} routes for preferences: distance=${preferences.desiredDistance}km, pace=${preferences.pace}min/km, type=${preferences.routeType}, terrain=${preferences.terrain}.
+        content: `Evaluate these ${routes.length} routes for preferences: distance=${preferences.desiredDistance}km, pace=${preferences.pace}min/km, type=${preferences.routeType}, terrain=${preferences.terrain}
         
 Routes data: ${JSON.stringify(routes.map((r, i) => ({
   id: i,
