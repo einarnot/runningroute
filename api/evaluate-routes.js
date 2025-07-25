@@ -32,18 +32,26 @@ export default async function handler(req, res) {
       usedAI = false;
     }
     
-    res.status(200).json({ evaluations, usedAI });
+    res.status(200).json({ 
+      evaluations, 
+      usedAI 
+    });
   } catch (error) {
     console.error('Route evaluation error:', error);
     
     // Last resort fallback
     const fallbackEvaluations = evaluateWithFallback(routes, preferences);
-    res.status(200).json({ evaluations: fallbackEvaluations, usedAI: false });
+    res.status(200).json({ 
+      evaluations: fallbackEvaluations, 
+      usedAI: false 
+    });
   }
 }
 
 // AI-based evaluation with proper JSON parsing
 async function evaluateWithAI(routes, preferences) {
+  console.log(`Evaluating ${routes.length} routes with AI:`, routes.map(r => ({ id: r.id, distance: r.distance })));
+  
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -54,22 +62,23 @@ async function evaluateWithAI(routes, preferences) {
       model: 'gpt-3.5-turbo',
       messages: [{
         role: 'system',
-        content: `You are a running route expert. Evaluate routes and return ONLY a valid JSON array with this exact format:
-[{"routeId": 0, "score": 0.85, "reasoning": "Good distance match", "criteria": {"distanceAccuracy": 0.9, "terrainMatch": 0.8, "safetyScore": 0.7, "scenicValue": 0.6, "navigationEase": 0.8}}]
-Do not use markdown formatting or code blocks. Return only the JSON array.`
+        content: `You are a running route expert. Evaluate ALL routes provided and return ONLY a valid JSON array with one evaluation object for each route in this exact format:
+[{"routeId": 0, "score": 0.85, "reasoning": "Good distance match", "criteria": {"distanceAccuracy": 0.9, "terrainMatch": 0.8, "safetyScore": 0.7, "scenicValue": 0.6, "navigationEase": 0.8}}, {"routeId": 1, "score": 0.72, "reasoning": "Different route", "criteria": {"distanceAccuracy": 0.8, "terrainMatch": 0.7, "safetyScore": 0.6, "scenicValue": 0.7, "navigationEase": 0.9}}]
+IMPORTANT: Return exactly ${routes.length} evaluation objects, one for each route. Do not use markdown formatting or code blocks. Return only the JSON array.`
       }, {
         role: 'user',
-        content: `Evaluate these ${routes.length} routes for preferences: distance=${preferences.desiredDistance}km, type=${preferences.routeType}, terrain=${preferences.terrain}.
+        content: `Evaluate these ${routes.length} routes for preferences: distance=${preferences.desiredDistance}km, pace=${preferences.pace}min/km, type=${preferences.routeType}, terrain=${preferences.terrain}.
         
 Routes data: ${JSON.stringify(routes.map((r, i) => ({
   id: i,
   distance: r.distance,
   ascent: r.ascent,
   descent: r.descent,
-  duration: r.duration
+  duration: r.duration,
+  estimatedDuration: Math.round(r.distance * (preferences.pace || 5))
 })))}
 
-Return scores 0-1.0 and criteria scores 0-1.0 for each route.`
+Return scores 0-1.0 and criteria scores 0-1.0 for each route. Consider pace preferences when evaluating duration suitability.`
       }],
       temperature: 0.1,
       max_tokens: 2000
@@ -86,11 +95,17 @@ Return scores 0-1.0 and criteria scores 0-1.0 for each route.`
   const data = await response.json();
   let content = data.choices[0].message.content.trim();
   
+  console.log('Raw AI response:', content);
+  
   // Clean up markdown formatting if present
   content = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
   
+  console.log('Cleaned AI response:', content);
+  
   try {
-    return JSON.parse(content);
+    const parsed = JSON.parse(content);
+    console.log('Parsed AI evaluations:', parsed);
+    return parsed;
   } catch (parseError) {
     console.error('Failed to parse AI response:', content);
     throw new Error('Invalid AI response format');
@@ -99,9 +114,17 @@ Return scores 0-1.0 and criteria scores 0-1.0 for each route.`
 
 // Fallback scoring algorithm that doesn't require external APIs
 function evaluateWithFallback(routes, preferences) {
+  console.log(`Evaluating ${routes.length} routes with fallback method`);
   const evaluations = [];
   
   routes.forEach((route, index) => {
+    // Calculate duration based on user's pace (min/km)
+    const userPace = preferences.pace || 5; // Default to 5 min/km if not provided
+    const estimatedDuration = route.distance * userPace; // in minutes
+    
+    // Update route with calculated duration
+    route.duration = Math.round(estimatedDuration);
+    
     // Distance accuracy scoring (0-1)
     const targetDistance = preferences.desiredDistance || 5;
     const distanceError = Math.abs(route.distance - targetDistance) / targetDistance;
@@ -158,7 +181,7 @@ function evaluateWithFallback(routes, preferences) {
     const finalScore = Math.round(weightedScore * 100) / 100;
     
     // Generate reasoning
-    let reasoning = `Distance: ${route.distance.toFixed(1)}km (target: ${targetDistance}km)`;
+    let reasoning = `Distance: ${route.distance.toFixed(1)}km (target: ${targetDistance}km), Duration: ${estimatedDuration.toFixed(0)}min at ${userPace}min/km pace`;
     if (distanceAccuracy > 0.8) reasoning += ', excellent match';
     else if (distanceAccuracy > 0.6) reasoning += ', good match';
     else reasoning += ', distance deviation';
@@ -183,5 +206,6 @@ function evaluateWithFallback(routes, preferences) {
     });
   });
   
+  console.log(`Fallback evaluation completed: ${evaluations.length} evaluations created`);
   return evaluations;
 }

@@ -92,6 +92,80 @@ class App {
                 this.updatePreferences();
             });
         }
+
+        // Setup pace synchronization
+        this.setupPaceSync();
+    }
+
+    // Setup pace range and number input synchronization
+    setupPaceSync() {
+        const paceRange = document.getElementById('paceRange');
+        const paceText = document.getElementById('paceValue');
+
+        if (paceRange && paceText) {
+            // When range changes, update text with min:sec format
+            paceRange.addEventListener('input', (e) => {
+                const rawValue = parseFloat(e.target.value);
+                const roundedValue = Utils.roundPaceToInterval(rawValue);
+                e.target.value = roundedValue;
+                paceText.value = Utils.formatPaceForDisplay(roundedValue);
+                this.updatePreferences();
+            });
+
+            // When text changes, validate and update range
+            paceText.addEventListener('input', (e) => {
+                const textValue = e.target.value;
+                
+                // Validate min:sec format (e.g., "4:30") with 5-second intervals
+                const minSecPattern = /^(\d+):([0-5]\d)$/;
+                const match = textValue.match(minSecPattern);
+                
+                if (match) {
+                    const minutes = parseInt(match[1]);
+                    const seconds = parseInt(match[2]);
+                    
+                    // Check if seconds are in 5-second intervals
+                    if (seconds % 5 === 0) {
+                        const decimalValue = Utils.minSecToDecimalMinutes(textValue);
+                        // Ensure it's within range
+                        if (decimalValue >= 3 && decimalValue <= 8) {
+                            paceRange.value = decimalValue;
+                            e.target.setCustomValidity('');
+                        } else {
+                            e.target.setCustomValidity('Pace must be between 3:00 and 8:00 min/km');
+                        }
+                    } else {
+                        e.target.setCustomValidity('Please use 5-second intervals (e.g., 4:30, 4:35, 4:40)');
+                    }
+                } else if (textValue !== '') {
+                    e.target.setCustomValidity('Please use format like 4:30 with 5-second intervals');
+                } else {
+                    e.target.setCustomValidity('');
+                }
+                
+                this.updatePreferences();
+            });
+
+            // When user leaves the text field, ensure proper formatting and round to 5-second intervals
+            paceText.addEventListener('blur', (e) => {
+                const textValue = e.target.value;
+                const minSecPattern = /^(\d+):([0-5]\d)$/;
+                
+                if (minSecPattern.test(textValue)) {
+                    const decimalValue = Utils.minSecToDecimalMinutes(textValue);
+                    if (decimalValue >= 3 && decimalValue <= 8) {
+                        // Round to nearest 5-second interval and reformat
+                        const roundedValue = Utils.roundPaceToInterval(decimalValue);
+                        e.target.value = Utils.formatPaceForDisplay(roundedValue);
+                        paceRange.value = roundedValue;
+                        this.updatePreferences();
+                    }
+                }
+            });
+
+            // Initialize with proper format
+            paceText.value = Utils.formatPaceForDisplay(parseFloat(paceRange.value));
+        }
     }
 
     // Setup location-related services
@@ -239,7 +313,7 @@ class App {
             
             try {
                 // Enhance route with elevation data if not already enhanced
-                const enhancedRoute = await window.RouteGenerator.enhanceRouteOnDemand(route);
+                const enhancedRoute = await window.RouteGenerator.enhanceRouteOnDemand(route, this.preferences);
                 
                 // Update current route
                 this.currentRoute = enhancedRoute;
@@ -428,7 +502,7 @@ class App {
             'routeDistance': route.stats?.distance || 'N/A',
             'routeElevation': route.stats?.ascent || 'N/A',
             'routeTime': route.stats?.duration || 'N/A',
-            'routeScore': route.aiScore ? `${Math.round(route.aiScore * 100)}%` : 'N/A'
+            'routeScore': (route.aiScore !== undefined && route.aiScore !== null) ? `${Math.round(route.aiScore * 100)}%` : 'N/A'
         };
 
         Object.entries(updates).forEach(([id, value]) => {
@@ -464,10 +538,12 @@ class App {
     // Update preferences from form
     updatePreferences() {
         const formData = new FormData(document.getElementById('preferencesForm'));
+        const paceText = document.getElementById('paceValue')?.value || '5:00';
         
         this.preferences = {
             distance: parseFloat(document.getElementById('distanceValue')?.value || 5),
-            routeType: formData.get('routeType') || 'loop',
+            pace: Utils.minSecToDecimalMinutes(paceText),
+            routeType: formData.get('routeType') || 'outback',
             terrain: formData.get('terrain') || 'flat',
             startLocation: document.getElementById('startLocation')?.value || ''
         };
@@ -477,7 +553,8 @@ class App {
     getDefaultPreferences() {
         return {
             distance: 5,
-            routeType: 'loop',
+            pace: 5,
+            routeType: 'outback',
             terrain: 'flat',
             startLocation: ''
         };
@@ -491,10 +568,18 @@ class App {
             // Update form fields
             const distanceRange = document.getElementById('distanceRange');
             const distanceValue = document.getElementById('distanceValue');
+            const paceRange = document.getElementById('paceRange');
+            const paceValue = document.getElementById('paceValue');
             
             if (distanceRange && distanceValue) {
                 distanceRange.value = saved.distance || 5;
                 distanceValue.value = saved.distance || 5;
+            }
+
+            if (paceRange && paceValue) {
+                const paceDecimal = saved.pace || 5;
+                paceRange.value = paceDecimal;
+                paceValue.value = Utils.formatPaceForDisplay(paceDecimal);
             }
 
             // Update radio buttons

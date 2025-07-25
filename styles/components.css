@@ -78,6 +78,23 @@
     box-shadow: 0 0 0 3px var(--primary-blue-light);
 }
 
+.range-input input[type="text"] {
+    width: 80px;
+    padding: var(--spacing-sm);
+    border: var(--border-width) solid var(--gray-medium);
+    border-radius: var(--border-radius);
+    font-size: var(--font-size-sm);
+    text-align: center;
+    background-color: var(--white);
+    font-family: monospace;
+}
+
+.range-input input[type="text"]:focus {
+    outline: none;
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 3px var(--primary-blue-light);
+}
+
 /* Radio Groups */
 .radio-group {
     display: flex;
@@ -133,6 +150,24 @@
     font-size: var(--font-size-base);
     color: var(--gray-dark);
     font-weight: var(--font-weight-normal);
+}
+
+/* Disabled Radio Option */
+.radio-option.radio-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.radio-option.radio-disabled:hover {
+    background-color: transparent;
+}
+
+.radio-option.radio-disabled .radio-custom {
+    border-color: var(--gray-light);
+}
+
+.radio-option.radio-disabled .radio-label {
+    color: var(--secondary-gray);
 }
 
 /* Location Input */

@@ -36,7 +36,7 @@ class RouteGenerator {
 
             // Enhance all routes with elevation data (for the best route only, others enhanced on selection)
             if (sortedRoutes.length > 0) {
-                sortedRoutes[0] = await this.enhanceRouteWithElevation(sortedRoutes[0]);
+                sortedRoutes[0] = await this.enhanceRouteWithElevation(sortedRoutes[0], preferences);
                 sortedRoutes[0].enhanced = true;
             }
             
@@ -56,6 +56,7 @@ class RouteGenerator {
             startLat: null,
             startLon: null,
             distance: 5,
+            pace: 5,
             routeType: 'loop',
             terrain: 'flat'
         };
@@ -83,6 +84,14 @@ class RouteGenerator {
             throw new Error('Distance must be between 0.5 and 50 kilometers');
         }
         validated.distance = distance;
+
+        // Validate pace
+        const pace = parseFloat(preferences.pace);
+        if (isNaN(pace) || pace < 3 || pace > 8) {
+            validated.pace = 5; // Default to 5 min/km if invalid
+        } else {
+            validated.pace = pace;
+        }
 
         // Validate route type
         if (['loop', 'outback'].includes(preferences.routeType)) {
@@ -127,6 +136,7 @@ class RouteGenerator {
             startLon: preferences.startLon,
             startAddress: preferences.startAddress,
             distance: preferences.distance,
+            pace: preferences.pace,
             routeType: preferences.routeType,
             terrain: preferences.terrain,
             alternatives: 10 // Request 10 alternative routes
@@ -161,9 +171,16 @@ class RouteGenerator {
 
     // Evaluate routes with AI
     async evaluateRoutesWithAI(routes, preferences) {
+        // Ensure all routes have IDs and assign them if missing
+        routes.forEach(route => {
+            if (!route.id) {
+                route.id = window.Utils.generateId();
+            }
+        });
+
         const requestData = {
             routes: routes.map(route => ({
-                id: route.id || window.Utils.generateId(),
+                id: route.id,
                 coordinates: route.coordinates,
                 distance: route.distance,
                 ascent: route.ascent,
@@ -172,6 +189,7 @@ class RouteGenerator {
             })),
             preferences: {
                 desiredDistance: preferences.distance,
+                pace: preferences.pace,
                 routeType: preferences.routeType,
                 terrain: preferences.terrain
             }
@@ -207,15 +225,27 @@ class RouteGenerator {
 
     // Merge AI evaluations with route data
     mergeRouteEvaluations(routes, evaluations, usedAI = false) {
-        return routes.map(route => {
-            const evaluation = evaluations.find(evaluation => 
-                evaluation.routeId === route.id || 
-                evaluation.routeId === routes.indexOf(route)
+        return routes.map((route, routeIndex) => {
+            // Try to find evaluation by ID first, then by index
+            let evaluation = evaluations.find(evaluation => 
+                evaluation.routeId === route.id
             );
+            
+            // If not found by ID, try by index
+            if (!evaluation) {
+                evaluation = evaluations.find(evaluation => 
+                    evaluation.routeId === routeIndex
+                );
+            }
+            
+            // If still not found, use the evaluation at the same array position
+            if (!evaluation && evaluations[routeIndex]) {
+                evaluation = evaluations[routeIndex];
+            }
 
             return {
                 ...route,
-                aiScore: evaluation?.score || 0,
+                aiScore: evaluation?.score !== undefined ? evaluation.score : 0,
                 aiReasoning: evaluation?.reasoning || '',
                 usedAI: usedAI,
                 distanceAccuracy: evaluation?.criteria?.distanceAccuracy || 0,
@@ -273,13 +303,13 @@ class RouteGenerator {
     }
 
     // Enhance a route on-demand (when selected by user)
-    async enhanceRouteOnDemand(route) {
+    async enhanceRouteOnDemand(route, preferences = null) {
         if (route.enhanced) {
             return route; // Already enhanced
         }
         
         try {
-            const enhancedRoute = await this.enhanceRouteWithElevation(route);
+            const enhancedRoute = await this.enhanceRouteWithElevation(route, preferences);
             enhancedRoute.enhanced = true;
             return enhancedRoute;
         } catch (error) {
@@ -289,7 +319,7 @@ class RouteGenerator {
     }
 
     // Enhance route with elevation data
-    async enhanceRouteWithElevation(route) {
+    async enhanceRouteWithElevation(route, preferences = null) {
         try {
             window.Utils.showLoading(true, 'Adding elevation data...', 'Analyzing route gradients');
 
@@ -318,7 +348,7 @@ class RouteGenerator {
                 terrainClassification,
                 stats: {
                     distance: window.Utils.formatDistance(route.distance),
-                    duration: window.Utils.formatTime(route.distance),
+                    duration: window.Utils.formatTime(route.distance, preferences?.pace || 5),
                     ascent: window.Utils.formatElevation(elevationProfile.totalAscent),
                     descent: window.Utils.formatElevation(elevationProfile.totalDescent),
                     maxElevation: window.Utils.formatElevation(elevationProfile.maxElevation),
@@ -342,7 +372,7 @@ class RouteGenerator {
                 terrainClassification: { level: 'unknown', difficulty: 0 },
                 stats: {
                     distance: window.Utils.formatDistance(route.distance),
-                    duration: window.Utils.formatTime(route.distance),
+                    duration: window.Utils.formatTime(route.distance, preferences?.pace || 5),
                     ascent: '0m',
                     descent: '0m',
                     maxElevation: '0m',

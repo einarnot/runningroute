@@ -103,8 +103,13 @@ class RouteSelector {
         const distance = route.distance ? `${route.distance.toFixed(1)}km` : 'N/A';
         const elevation = route.ascent ? `${Math.round(route.ascent)}m` : 'N/A';
         const duration = route.duration ? this.formatDuration(route.duration) : 'N/A';
-        const score = route.aiScore ? `${Math.round(route.aiScore * 100)}%` : 'N/A';
+        const score = (route.aiScore !== undefined && route.aiScore !== null) ? `${Math.round(route.aiScore * 100)}%` : 'N/A';
         const scoreLabel = route.usedAI ? 'AI' : 'Score';
+        
+        // Get route type with proper fallback
+        const routeType = route.routeType || route.type || 'Out & Back';
+        const displayType = routeType === 'outback' ? 'Out & Back' : 
+                           routeType === 'loop' ? 'Loop' : routeType;
 
         tile.innerHTML = `
             <div class="route-tile-header">
@@ -126,7 +131,7 @@ class RouteSelector {
                 </div>
                 <div class="route-stat">
                     <div class="route-stat-label">Type</div>
-                    <div class="route-stat-value">${route.type || 'Loop'}</div>
+                    <div class="route-stat-value">${displayType}</div>
                 </div>
             </div>
         `;
@@ -200,17 +205,28 @@ class RouteSelector {
         console.log(`Route ${index + 1} selected:`, selectedRoute);
     }
 
-    // Format duration from seconds to readable format
-    formatDuration(seconds) {
-        if (!seconds || seconds <= 0) return 'N/A';
+    // Format duration from minutes or seconds to readable format
+    formatDuration(duration) {
+        if (!duration || duration <= 0) return 'N/A';
 
-        const hours = Math.floor(seconds / 3600);
-        const minutes = Math.floor((seconds % 3600) / 60);
+        // Assume duration is in minutes if it's a reasonable number (< 1000)
+        // Otherwise assume it's in seconds
+        let minutes;
+        if (duration < 1000) {
+            // Duration is likely in minutes
+            minutes = Math.round(duration);
+        } else {
+            // Duration is likely in seconds, convert to minutes
+            minutes = Math.floor(duration / 60);
+        }
+
+        const hours = Math.floor(minutes / 60);
+        const remainingMinutes = minutes % 60;
 
         if (hours > 0) {
-            return `${hours}h ${minutes}m`;
+            return `${hours}h ${remainingMinutes}m`;
         } else {
-            return `${minutes}m`;
+            return `${remainingMinutes}m`;
         }
     }
 

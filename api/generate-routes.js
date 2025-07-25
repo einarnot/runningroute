@@ -17,6 +17,7 @@ export default async function handler(req, res) {
     startLon, 
     startAddress,
     distance, 
+    pace = 5,
     routeType, 
     terrain, 
     alternatives = 5 
@@ -61,7 +62,9 @@ export default async function handler(req, res) {
     }
 
     // Generate route alternatives
-    const routes = await generateRouteAlternatives(lat, lon, distance, routeType, terrain, alternatives);
+    const routes = await generateRouteAlternatives(lat, lon, distance, routeType, terrain, alternatives, pace);
+    
+    console.log(`Generated ${routes?.length || 0} route alternatives with pace ${pace}min/km`);
     
     if (!routes || routes.length === 0) {
       return res.status(404).json({ error: 'No routes could be generated for the given parameters' });
@@ -75,9 +78,10 @@ export default async function handler(req, res) {
 }
 
 // Helper function to generate route alternatives
-async function generateRouteAlternatives(startLat, startLon, distance, routeType, terrain, alternatives) {
+async function generateRouteAlternatives(startLat, startLon, distance, routeType, terrain, alternatives, pace = 5) {
   const routes = [];
   const maxRetries = 3;
+  const distanceAdjustments = new Map(); // Track distance adjustments for each bearing
   
   // Generate different route variations
   const bearings = [0, 45, 90, 135, 180, 225, 270, 315]; // 8 directions
@@ -86,16 +90,53 @@ async function generateRouteAlternatives(startLat, startLon, distance, routeType
   for (let i = 0; i < Math.min(alternatives, bearings.length * distanceVariations.length); i++) {
     const bearing = bearings[i % bearings.length];
     const distanceMultiplier = distanceVariations[Math.floor(i / bearings.length) % distanceVariations.length];
-    const adjustedDistance = distance * distanceMultiplier;
+    let adjustedDistance = distance * distanceMultiplier;
+    
+    // Apply learned distance adjustments for this bearing
+    const bearingKey = Math.round(bearing / 45) * 45; // Group similar bearings
+    if (distanceAdjustments.has(bearingKey)) {
+      const adjustment = distanceAdjustments.get(bearingKey);
+      adjustedDistance *= adjustment;
+      console.log(`Applying learned adjustment for bearing ${bearing}°: ${adjustment.toFixed(3)}x`);
+    }
     
     try {
       const route = await generateSingleRoute(startLat, startLon, adjustedDistance, routeType, bearing);
       if (route) {
+        // Calculate the distance error and learn from it
+        const actualDistance = route.distance;
+        const targetDistance = distance * distanceMultiplier;
+        const distanceError = actualDistance / targetDistance;
+        
+        // Update distance adjustment for this bearing
+        let newAdjustment;
+        if (distanceAdjustments.has(bearingKey)) {
+          // Exponential moving average for smoother learning
+          const currentAdjustment = distanceAdjustments.get(bearingKey);
+          const correctionFactor = 1 / distanceError;
+          newAdjustment = currentAdjustment * 0.7 + correctionFactor * 0.3;
+        } else {
+          // First time for this bearing, use inverse of error
+          newAdjustment = 1 / distanceError;
+        }
+        
+        // Limit adjustment to reasonable bounds (0.5x to 2.0x)
+        newAdjustment = Math.max(0.5, Math.min(2.0, newAdjustment));
+        distanceAdjustments.set(bearingKey, newAdjustment);
+        
+        console.log(`Route ${i}: target=${targetDistance.toFixed(1)}km, actual=${actualDistance.toFixed(1)}km, error=${distanceError.toFixed(3)}, new_adj=${newAdjustment.toFixed(3)}`);
+        
+        // Calculate duration based on user's pace
+        route.duration = Math.round(route.distance * pace);
+        route.pace = pace;
+        route.routeType = routeType; // Add route type to the route object
         routes.push({
           id: `route_${i}`,
           ...route,
           bearing,
-          distanceMultiplier
+          distanceMultiplier,
+          targetDistance: targetDistance,
+          distanceAccuracy: Math.abs(1 - distanceError) // How close we got (0 = perfect, 1 = 100% off)
         });
       }
     } catch (error) {
@@ -109,18 +150,23 @@ async function generateRouteAlternatives(startLat, startLon, distance, routeType
 
 // Helper function to generate a single route
 async function generateSingleRoute(startLat, startLon, distance, routeType, preferredBearing) {
-  const radiusKm = distance / 2;
-  const coordinates = [];
+  let coordinates = [];
   
   if (routeType === 'loop') {
     // Generate loop route coordinates (ORS expects [lng, lat] format)
     coordinates.push([startLon, startLat]); // Start point
     
     // Create waypoints for a roughly circular route
+    // Adjust waypoint distances based on target route distance
     const numWaypoints = 4;
+    const baseRadius = distance / (2 * Math.PI); // Theoretical radius for circular route
+    const radiusMultiplier = 1.2; // Adjust for road network reality
+    const effectiveRadius = baseRadius * radiusMultiplier;
+    
     for (let i = 0; i < numWaypoints; i++) {
       const angle = (preferredBearing + (360 / numWaypoints) * i) * (Math.PI / 180);
-      const waypointDistance = radiusKm * (0.7 + Math.random() * 0.6); // Vary distance for more natural routes
+      // Use more consistent waypoint distances for better distance control
+      const waypointDistance = effectiveRadius * (0.8 + Math.random() * 0.4); // Less variation for better control
       
       const lat = startLat + (waypointDistance / 111.32) * Math.cos(angle);
       const lon = startLon + (waypointDistance / (111.32 * Math.cos(startLat * Math.PI / 180))) * Math.sin(angle);
@@ -130,15 +176,23 @@ async function generateSingleRoute(startLat, startLon, distance, routeType, pref
     
     coordinates.push([startLon, startLat]); // Return to start
   } else {
-    // Generate out-and-back route
+    // Generate out-and-back route with better distance estimation
     const angle = preferredBearing * (Math.PI / 180);
-    const halfDistance = distance / 2;
+    // For out-and-back, the actual route distance is usually longer than straight-line distance
+    // Use a more conservative estimate that accounts for road network
+    const straightLineDistance = distance / 2.4; // More conservative factor for road routing
     
     coordinates.push([startLon, startLat]); // Start point
     
+    // Add intermediate waypoint to create more interesting route
+    const intermediateDistance = straightLineDistance * 0.7;
+    const intermediateLat = startLat + (intermediateDistance / 111.32) * Math.cos(angle);
+    const intermediateLon = startLon + (intermediateDistance / (111.32 * Math.cos(startLat * Math.PI / 180))) * Math.sin(angle);
+    coordinates.push([intermediateLon, intermediateLat]);
+    
     // Destination point
-    const destLat = startLat + (halfDistance / 111.32) * Math.cos(angle);
-    const destLon = startLon + (halfDistance / (111.32 * Math.cos(startLat * Math.PI / 180))) * Math.sin(angle);
+    const destLat = startLat + (straightLineDistance / 111.32) * Math.cos(angle);
+    const destLon = startLon + (straightLineDistance / (111.32 * Math.cos(startLat * Math.PI / 180))) * Math.sin(angle);
     
     coordinates.push([destLon, destLat]); // Destination ([lng, lat] format)
     coordinates.push([startLon, startLat]); // Return to start

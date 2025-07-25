@@ -71,9 +71,9 @@ function formatElevation(elevationM) {
     return `${Math.round(elevationM)}m`;
 }
 
-// Format time for display (assumes 5 min/km pace)
-function formatTime(distanceKm) {
-    const totalMinutes = Math.round(distanceKm * 5);
+// Format time for display based on distance and pace
+function formatTime(distanceKm, paceMinPerKm = 5) {
+    const totalMinutes = Math.round(distanceKm * paceMinPerKm);
     const hours = Math.floor(totalMinutes / 60);
     const minutes = totalMinutes % 60;
     
@@ -282,6 +282,37 @@ function getCardinalDirection(bearing) {
     return directions[index];
 }
 
+// Pace conversion utilities
+function decimalMinutesToMinSec(decimalMinutes) {
+    const minutes = Math.floor(decimalMinutes);
+    const seconds = Math.round((decimalMinutes - minutes) * 60);
+    // Round to nearest 5-second interval
+    const roundedSeconds = Math.round(seconds / 5) * 5;
+    const finalSeconds = roundedSeconds === 60 ? 0 : roundedSeconds;
+    const finalMinutes = roundedSeconds === 60 ? minutes + 1 : minutes;
+    return `${finalMinutes}:${finalSeconds.toString().padStart(2, '0')}`;
+}
+
+function minSecToDecimalMinutes(minSecString) {
+    // Handle both "4:30" and "4.5" formats for backward compatibility
+    if (minSecString.includes(':')) {
+        const [minutes, seconds] = minSecString.split(':').map(Number);
+        return minutes + (seconds / 60);
+    }
+    return parseFloat(minSecString);
+}
+
+function formatPaceForDisplay(decimalMinutes) {
+    return decimalMinutesToMinSec(decimalMinutes);
+}
+
+function roundPaceToInterval(decimalMinutes) {
+    // Round to nearest 5-second interval
+    const totalSeconds = decimalMinutes * 60;
+    const roundedSeconds = Math.round(totalSeconds / 5) * 5;
+    return roundedSeconds / 60;
+}
+
 // Export utilities for use in other modules
 window.Utils = {
     calculateDistance,
@@ -307,5 +338,9 @@ window.Utils = {
     isTouchDevice,
     getCardinalDirection,
     toRadians,
-    toDegrees
+    toDegrees,
+    decimalMinutesToMinSec,
+    minSecToDecimalMinutes,
+    formatPaceForDisplay,
+    roundPaceToInterval
 };
