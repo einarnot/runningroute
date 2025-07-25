@@ -113,7 +113,7 @@ async function generateSingleRoute(startLat, startLon, distance, routeType, pref
   const coordinates = [];
   
   if (routeType === 'loop') {
-    // Generate loop route coordinates
+    // Generate loop route coordinates (ORS expects [lng, lat] format)
     coordinates.push([startLon, startLat]); // Start point
     
     // Create waypoints for a roughly circular route
@@ -125,7 +125,7 @@ async function generateSingleRoute(startLat, startLon, distance, routeType, pref
       const lat = startLat + (waypointDistance / 111.32) * Math.cos(angle);
       const lon = startLon + (waypointDistance / (111.32 * Math.cos(startLat * Math.PI / 180))) * Math.sin(angle);
       
-      coordinates.push([lon, lat]);
+      coordinates.push([lon, lat]); // [lng, lat] format for ORS
     }
     
     coordinates.push([startLon, startLat]); // Return to start
@@ -140,7 +140,7 @@ async function generateSingleRoute(startLat, startLon, distance, routeType, pref
     const destLat = startLat + (halfDistance / 111.32) * Math.cos(angle);
     const destLon = startLon + (halfDistance / (111.32 * Math.cos(startLat * Math.PI / 180))) * Math.sin(angle);
     
-    coordinates.push([destLon, destLat]); // Destination
+    coordinates.push([destLon, destLat]); // Destination ([lng, lat] format)
     coordinates.push([startLon, startLat]); // Return to start
   }
   
@@ -155,7 +155,7 @@ async function generateSingleRoute(startLat, startLon, distance, routeType, pref
       coordinates,
       format: 'json',
       elevation: true,
-      geometry_format: 'polyline',
+      extra_info: ['steepness'],
       instructions: false
     })
   });
@@ -178,14 +178,14 @@ async function generateSingleRoute(startLat, startLon, distance, routeType, pref
     coordinates: decodePolyline(route.geometry),
     distance: summary.distance ? summary.distance / 1000 : distance, // Convert to km
     duration: summary.duration || 0,
-    ascent: route.segments?.reduce((sum, seg) => sum + (seg.ascent || 0), 0) || 0,
-    descent: route.segments?.reduce((sum, seg) => sum + (seg.descent || 0), 0) || 0,
+    ascent: summary.ascent || 0,
+    descent: summary.descent || 0,
     segments: route.segments || [],
     bbox: data.bbox || null
   };
 }
 
-// Simple polyline decoder (basic implementation)
+// Polyline decoder with elevation support (based on ORS format)
 function decodePolyline(encoded, precision = 5) {
   if (!encoded) return [];
   
@@ -193,7 +193,9 @@ function decodePolyline(encoded, precision = 5) {
   let index = 0;
   let lat = 0;
   let lng = 0;
+  let ele = 0;
   const factor = Math.pow(10, precision);
+  const elevationFactor = Math.pow(10, 2); // ORS uses precision 2 for elevation
 
   while (index < encoded.length) {
     // Decode latitude
@@ -223,7 +225,25 @@ function decodePolyline(encoded, precision = 5) {
     const deltaLng = ((result & 1) ? ~(result >> 1) : (result >> 1));
     lng += deltaLng;
 
-    coordinates.push([lat / factor, lng / factor]);
+    // Decode elevation (if available)
+    if (index < encoded.length) {
+      shift = 0;
+      result = 0;
+      
+      do {
+        byte = encoded.charCodeAt(index++) - 63;
+        result |= (byte & 0x1f) << shift;
+        shift += 5;
+      } while (byte >= 0x20 && index < encoded.length);
+      
+      const deltaEle = ((result & 1) ? ~(result >> 1) : (result >> 1));
+      ele += deltaEle;
+      
+      coordinates.push([lat / factor, lng / factor, ele / elevationFactor]);
+    } else {
+      // No elevation data available
+      coordinates.push([lat / factor, lng / factor, 0]);
+    }
   }
 
   return coordinates;
