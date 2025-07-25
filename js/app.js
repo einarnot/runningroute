@@ -19,13 +19,8 @@ class App {
         try {
             console.log('Initializing Route Generator v5...');
             
-            // Check if MapController is available
-            if (!window.MapController) {
-                throw new Error('MapController not loaded');
-            }
-            
             // Initialize map
-            MapController.initializeMap();
+            window.MapController.initializeMap();
             
             // Set up event listeners
             this.setupEventListeners();
@@ -37,9 +32,7 @@ class App {
             this.loadSavedPreferences();
             
             // Add elevation legend to map
-            if (MapController && MapController.addElevationLegend) {
-                MapController.addElevationLegend();
-            }
+            window.MapController.addElevationLegend();
             
             console.log('App initialized successfully');
         } catch (error) {
@@ -190,20 +183,17 @@ class App {
 
         if (centerBtn) {
             centerBtn.addEventListener('click', () => {
-                if (!MapController) return;
                 if (this.currentRoute) {
-                    MapController.centerOnRoute();
+                    window.MapController.centerOnRoute();
                 } else {
-                    MapController.centerOnUserLocation();
+                    window.MapController.centerOnUserLocation();
                 }
             });
         }
 
         if (fullscreenBtn) {
             fullscreenBtn.addEventListener('click', () => {
-                if (MapController && MapController.toggleFullscreen) {
-                    MapController.toggleFullscreen();
-                }
+                window.MapController.toggleFullscreen();
             });
         }
     }
@@ -237,9 +227,7 @@ class App {
         // Handle orientation changes
         window.addEventListener('orientationchange', () => {
             setTimeout(() => {
-                if (MapController && MapController.invalidateSize) {
-                    MapController.invalidateSize();
-                }
+                window.MapController.invalidateSize();
             }, 500);
         });
     }
@@ -294,9 +282,7 @@ class App {
                 this.currentRoute = route;
                 
                 // Display route on map
-                if (MapController && MapController.displayRoute) {
-                    MapController.displayRoute(route);
-                }
+                window.MapController.displayRoute(route);
                 
                 // Update route info panel
                 this.updateRouteInfoPanel(route);
@@ -335,10 +321,8 @@ class App {
                 }
 
                 // Center map on location
-                if (MapController && MapController.map) {
-                    MapController.map.setView([position.lat, position.lon], 15);
-                    MapController.addLocationMarker(position.lat, position.lon, 'Your Location', true);
-                }
+                window.MapController.map.setView([position.lat, position.lon], 15);
+                window.MapController.addLocationMarker(position.lat, position.lon, 'Your Location', true);
 
                 // Try to get readable address
                 try {
@@ -367,10 +351,8 @@ class App {
                 const location = results[0]; // Use first result
                 
                 // Update map
-                if (MapController && MapController.map) {
-                    MapController.map.setView([location.lat, location.lon], 15);
-                    MapController.addLocationMarker(location.lat, location.lon, location.displayName);
-                }
+                window.MapController.map.setView([location.lat, location.lon], 15);
+                window.MapController.addLocationMarker(location.lat, location.lon, location.displayName);
                 
                 // Save to recent locations
                 LocationService.saveRecentLocation(location);
@@ -486,9 +468,7 @@ class App {
     // Handle window resize
     handleWindowResize() {
         // Invalidate map size
-        if (MapController && MapController.invalidateSize) {
-            MapController.invalidateSize();
-        }
+        window.MapController.invalidateSize();
         
         // Update mobile class
         if (Utils.isMobile()) {
@@ -518,9 +498,7 @@ class App {
     // Clear current route
     clearRoute() {
         this.currentRoute = null;
-        if (MapController && MapController.clearRoute) {
-            MapController.clearRoute();
-        }
+        window.MapController.clearRoute();
         
         // Hide route info panel
         const routeInfo = document.getElementById('routeInfo');
@@ -550,7 +528,7 @@ class App {
             currentRoute: !!this.currentRoute,
             preferences: this.preferences,
             isGenerating: this.isGenerating,
-            mapInitialized: MapController ? MapController.isInitialized() : false,
+            mapInitialized: window.MapController.isInitialized(),
             routeGenerator: RouteGenerator.getStats(),
             locationService: {
                 currentPosition: LocationService.currentPosition,
