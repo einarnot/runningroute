@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Powered Running Route Generator</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" 
+          crossorigin=""/>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/components.css">
+    <link rel="stylesheet" href="styles/mobile.css">
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#2563eb">
+    <meta name="description" content="Generate intelligent running routes with AI-powered optimization">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <h1 class="logo">Route Generator</h1>
+            <div class="header-actions">
+                <button class="btn-secondary" id="helpBtn">Help</button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Sidebar/Preferences Panel -->
+            <aside class="sidebar" id="sidebar">
+                <div class="sidebar-header">
+                    <h2>Route Preferences</h2>
+                    <button class="sidebar-toggle" id="sidebarToggle">
+                        <span class="toggle-icon">←</span>
+                    </button>
+                </div>
+
+                <form class="preferences-form" id="preferencesForm">
+                    <!-- Distance Input -->
+                    <div class="form-group">
+                        <label for="distanceRange">Distance (km)</label>
+                        <div class="range-input">
+                            <input type="range" id="distanceRange" min="1" max="50" value="5" step="0.5">
+                            <input type="number" id="distanceValue" min="1" max="50" value="5" step="0.5">
+                        </div>
+                    </div>
+
+                    <!-- Route Type -->
+                    <div class="form-group">
+                        <label>Route Type</label>
+                        <div class="radio-group">
+                            <label class="radio-option">
+                                <input type="radio" name="routeType" value="loop" checked>
+                                <span class="radio-custom"></span>
+                                <span class="radio-label">Loop</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="routeType" value="outback">
+                                <span class="radio-custom"></span>
+                                <span class="radio-label">Out & Back</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Terrain Preference -->
+                    <div class="form-group">
+                        <label>Terrain Preference</label>
+                        <div class="radio-group">
+                            <label class="radio-option">
+                                <input type="radio" name="terrain" value="flat" checked>
+                                <span class="radio-custom"></span>
+                                <span class="radio-label">Flat</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="terrain" value="hilly">
+                                <span class="radio-custom"></span>
+                                <span class="radio-label">Hilly</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Starting Location -->
+                    <div class="form-group">
+                        <label for="startLocation">Starting Location</label>
+                        <div class="location-input">
+                            <input type="text" id="startLocation" placeholder="Enter address or click map">
+                            <button type="button" class="btn-icon" id="locateBtn" title="Use current location">
+                                📍
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Generate Button -->
+                    <button type="submit" class="btn-primary" id="generateBtn">
+                        <span class="btn-text">Generate Route</span>
+                        <span class="btn-loader" id="generateLoader">Generating...</span>
+                    </button>
+                </form>
+
+                <!-- Route Information Panel -->
+                <div class="route-info" id="routeInfo" style="display: none;">
+                    <h3>Route Details</h3>
+                    <div class="info-item">
+                        <span class="info-label">Distance:</span>
+                        <span class="info-value" id="routeDistance">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Elevation Gain:</span>
+                        <span class="info-value" id="routeElevation">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Estimated Time:</span>
+                        <span class="info-value" id="routeTime">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">AI Score:</span>
+                        <span class="info-value" id="routeScore">-</span>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Map Container -->
+            <div class="map-container">
+                <div id="map" class="map"></div>
+                
+                <!-- Map Controls -->
+                <div class="map-controls">
+                    <button class="control-btn" id="centerBtn" title="Center on location">🎯</button>
+                    <button class="control-btn" id="fullscreenBtn" title="Toggle fullscreen">⛶</button>
+                </div>
+
+                <!-- Loading Overlay -->
+                <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+                    <div class="loading-spinner"></div>
+                    <div class="loading-text">Generating your perfect route...</div>
+                    <div class="loading-details" id="loadingDetails">Analyzing route alternatives</div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Error Modal -->
+        <div class="modal" id="errorModal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Something went wrong</h3>
+                    <button class="modal-close" id="errorModalClose">×</button>
+                </div>
+                <div class="modal-body">
+                    <p id="errorMessage">An unexpected error occurred. Please try again.</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-primary" id="errorModalOk">OK</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Help Modal -->
+        <div class="modal" id="helpModal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>How to Use</h3>
+                    <button class="modal-close" id="helpModalClose">×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="help-section">
+                        <h4>Distance</h4>
+                        <p>Set your desired route distance using the slider or direct input (1-50km).</p>
+                    </div>
+                    <div class="help-section">
+                        <h4>Route Type</h4>
+                        <p><strong>Loop:</strong> Circular route returning to start<br>
+                           <strong>Out & Back:</strong> Go out and return on same path</p>
+                    </div>
+                    <div class="help-section">
+                        <h4>Terrain</h4>
+                        <p><strong>Flat:</strong> Minimal elevation changes<br>
+                           <strong>Hilly:</strong> Varied elevation with climbs</p>
+                    </div>
+                    <div class="help-section">
+                        <h4>Route Colors</h4>
+                        <p><span class="color-demo green"></span> Green: Flat (0-3% grade)<br>
+                           <span class="color-demo yellow"></span> Yellow: Moderate (3-8% grade)<br>
+                           <span class="color-demo red"></span> Red: Steep (8%+ grade)</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-primary" id="helpModalOk">Got it!</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" 
+            crossorigin=""></script>
+    
+    <!-- Custom JS -->
+    <script src="js/utils.js"></script>
+    <script src="js/polylineDecoder.js"></script>
+    <script src="js/elevationService.js"></script>
+    <script src="js/locationService.js"></script>
+    <script src="js/mapController.js"></script>
+    <script src="js/routeGenerator.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

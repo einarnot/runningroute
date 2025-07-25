@@ -1,0 +1,332 @@
+/* Mobile Responsive Styles for Route Generator v5 */
+
+/* Tablet Styles */
+@media (max-width: 1024px) {
+    :root {
+        --sidebar-width: 280px;
+    }
+    
+    .sidebar {
+        width: var(--sidebar-width);
+    }
+    
+    .preferences-form {
+        padding: var(--spacing-md);
+        gap: var(--spacing-md);
+    }
+    
+    .route-info {
+        padding: var(--spacing-md);
+    }
+}
+
+/* Mobile Styles */
+@media (max-width: 768px) {
+    :root {
+        --header-height: 56px;
+        --sidebar-width: 100%;
+    }
+    
+    /* Header Adjustments */
+    .header {
+        height: var(--header-height);
+        padding: 0 var(--spacing-md);
+    }
+    
+    .logo {
+        font-size: var(--font-size-lg);
+    }
+    
+    /* Mobile Sidebar */
+    .sidebar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: var(--sidebar-width);
+        height: 100%;
+        z-index: 1100;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+    }
+    
+    .sidebar.open {
+        transform: translateX(0);
+    }
+    
+    .sidebar-toggle {
+        display: block;
+    }
+    
+    .sidebar.open .toggle-icon {
+        transform: rotate(180deg);
+    }
+    
+    .toggle-icon {
+        transition: transform 0.3s ease;
+    }
+    
+    /* Mobile Map Container */
+    .map-container {
+        width: 100%;
+    }
+    
+    /* Mobile Backdrop */
+    .mobile-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+    }
+    
+    .mobile-backdrop.active {
+        opacity: 1;
+        visibility: visible;
+    }
+    
+    /* Mobile Form Adjustments */
+    .preferences-form {
+        padding: var(--spacing-md);
+        gap: var(--spacing-md);
+    }
+    
+    .form-group {
+        gap: var(--spacing-sm);
+    }
+    
+    .range-input {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--spacing-sm);
+    }
+    
+    .range-input input[type="number"] {
+        width: 100%;
+        text-align: left;
+    }
+    
+    /* Mobile Map Controls */
+    .map-controls {
+        top: var(--spacing-sm);
+        right: var(--spacing-sm);
+    }
+    
+    .control-btn {
+        width: 36px;
+        height: 36px;
+        font-size: var(--font-size-sm);
+    }
+    
+    /* Mobile Modal */
+    .modal-content {
+        width: 95%;
+        margin: var(--spacing-md);
+    }
+    
+    .modal-header,
+    .modal-body,
+    .modal-footer {
+        padding: var(--spacing-md);
+    }
+    
+    /* Mobile Button Adjustments */
+    .btn-primary,
+    .btn-secondary {
+        padding: var(--spacing-md);
+        font-size: var(--font-size-base);
+        min-height: 48px; /* Touch target size */
+    }
+    
+    .btn-icon {
+        width: 44px;
+        height: 44px;
+        font-size: var(--font-size-base);
+    }
+    
+    /* Mobile Loading Overlay */
+    .loading-overlay {
+        padding: var(--spacing-lg);
+    }
+    
+    .loading-text {
+        font-size: var(--font-size-base);
+        text-align: center;
+    }
+    
+    .loading-details {
+        text-align: center;
+    }
+}
+
+/* Small Mobile Styles */
+@media (max-width: 480px) {
+    :root {
+        --spacing-md: 12px;
+        --spacing-lg: 16px;
+        --header-height: 52px;
+    }
+    
+    .header {
+        height: var(--header-height);
+        padding: 0 var(--spacing-sm);
+    }
+    
+    .logo {
+        font-size: var(--font-size-base);
+    }
+    
+    .preferences-form {
+        padding: var(--spacing-sm);
+    }
+    
+    .route-info {
+        padding: var(--spacing-sm);
+    }
+    
+    .modal-content {
+        width: 98%;
+        margin: var(--spacing-sm);
+    }
+    
+    .modal-header,
+    .modal-body,
+    .modal-footer {
+        padding: var(--spacing-sm);
+    }
+    
+    /* Compact Info Items */
+    .info-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--spacing-xs);
+        padding: var(--spacing-sm) 0;
+    }
+    
+    .info-value {
+        font-size: var(--font-size-lg);
+    }
+}
+
+/* Landscape Mobile Adjustments */
+@media (max-width: 768px) and (orientation: landscape) {
+    .sidebar {
+        width: 300px;
+    }
+    
+    .preferences-form {
+        padding: var(--spacing-sm);
+        gap: var(--spacing-sm);
+    }
+    
+    .form-group {
+        gap: 6px;
+    }
+    
+    .radio-group {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: var(--spacing-sm);
+    }
+    
+    .route-info {
+        padding: var(--spacing-sm);
+    }
+    
+    .loading-overlay {
+        padding: var(--spacing-md);
+    }
+    
+    .loading-spinner {
+        width: 40px;
+        height: 40px;
+        margin-bottom: var(--spacing-md);
+    }
+}
+
+/* Touch Device Optimizations */
+@media (hover: none) and (pointer: coarse) {
+    /* Increase touch targets */
+    .radio-option {
+        padding: var(--spacing-md);
+        min-height: 48px;
+    }
+    
+    .control-btn {
+        min-width: 44px;
+        min-height: 44px;
+    }
+    
+    .btn-icon {
+        min-width: 48px;
+        min-height: 48px;
+    }
+    
+    /* Remove hover effects */
+    .radio-option:hover,
+    .control-btn:hover,
+    .btn-secondary:hover,
+    .modal-close:hover,
+    .sidebar-toggle:hover {
+        background-color: initial;
+    }
+    
+    /* Add active states instead */
+    .radio-option:active {
+        background-color: var(--gray-light);
+    }
+    
+    .control-btn:active {
+        background-color: var(--primary-blue-light);
+    }
+    
+    .btn-secondary:active {
+        background-color: var(--gray-light);
+    }
+}
+
+/* High DPI / Retina Display Adjustments */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .loading-spinner {
+        border-width: 2px;
+    }
+    
+    .radio-custom {
+        border-width: 1px;
+    }
+    
+    /* Sharper borders for form elements */
+    input[type="text"],
+    input[type="number"] {
+        border-width: 1px;
+    }
+}
+
+/* Dark Mode Support (if system preference) */
+@media (prefers-color-scheme: dark) {
+    /* This can be expanded later for full dark mode support */
+    .leaflet-control-container .leaflet-control {
+        background-color: rgba(40, 40, 40, 0.9);
+        color: #ffffff;
+    }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    .loading-spinner {
+        animation: none;
+        border-top-color: var(--primary-blue);
+    }
+}
