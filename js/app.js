@@ -37,7 +37,7 @@ class App {
             console.log('App initialized successfully');
         } catch (error) {
             console.error('Failed to initialize app:', error);
-            Utils.showError('Failed to initialize the application. Please refresh the page.');
+            window.Utils.showError('Failed to initialize the application. Please refresh the page.');
         }
     }
 
@@ -68,7 +68,7 @@ class App {
         this.setupSidebarToggle();
         
         // Window resize handling
-        window.addEventListener('resize', Utils.throttle(() => {
+        window.addEventListener('resize', window.Utils.throttle(() => {
             this.handleWindowResize();
         }, 250));
     }
@@ -105,7 +105,7 @@ class App {
 
         // Location input with geocoding
         if (locationInput) {
-            const debouncedGeocode = Utils.debounce(async (value) => {
+            const debouncedGeocode = window.Utils.debounce(async (value) => {
                 if (value.length > 3 && !this.isCoordinateFormat(value)) {
                     await this.handleAddressInput(value);
                 }
@@ -216,11 +216,11 @@ class App {
     // Setup mobile-specific features
     setupMobileFeatures() {
         // Detect mobile and add appropriate classes
-        if (Utils.isMobile()) {
+        if (window.Utils.isMobile()) {
             document.body.classList.add('mobile');
         }
 
-        if (Utils.isTouchDevice()) {
+        if (window.Utils.isTouchDevice()) {
             document.body.classList.add('touch');
         }
 
@@ -268,7 +268,7 @@ class App {
             
             // Validate preferences
             if (!this.preferences.startLocation) {
-                Utils.showError('Please enter a starting location');
+                window.Utils.showError('Please enter a starting location');
                 return;
             }
 
@@ -276,7 +276,7 @@ class App {
             this.setGeneratingState(true);
 
             // Generate route
-            const route = await RouteGenerator.generateRoutes(this.preferences);
+            const route = await window.RouteGenerator.generateRoutes(this.preferences);
             
             if (route) {
                 this.currentRoute = route;
@@ -288,7 +288,7 @@ class App {
                 this.updateRouteInfoPanel(route);
                 
                 // Close mobile sidebar if open
-                if (Utils.isMobile()) {
+                if (window.Utils.isMobile()) {
                     const sidebar = document.getElementById('sidebar');
                     if (sidebar) {
                         sidebar.classList.remove('open');
@@ -303,7 +303,7 @@ class App {
             }
         } catch (error) {
             console.error('Route generation failed:', error);
-            Utils.showError(error.message || 'Failed to generate route. Please try again.');
+            window.Utils.showError(error.message || 'Failed to generate route. Please try again.');
         } finally {
             this.setGeneratingState(false);
         }
@@ -312,7 +312,7 @@ class App {
     // Handle current location request
     async handleCurrentLocationRequest() {
         try {
-            const position = await LocationService.getCurrentLocation();
+            const position = await window.LocationService.getCurrentLocation();
             
             if (position) {
                 const locationInput = document.getElementById('startLocation');
@@ -326,9 +326,9 @@ class App {
 
                 // Try to get readable address
                 try {
-                    const address = await LocationService.reverseGeocode(position.lat, position.lon);
+                    const address = await window.LocationService.reverseGeocode(position.lat, position.lon);
                     if (locationInput) {
-                        locationInput.value = LocationService.formatAddress(address);
+                        locationInput.value = window.LocationService.formatAddress(address);
                     }
                 } catch (reverseError) {
                     console.warn('Could not get address for location:', reverseError);
@@ -338,14 +338,14 @@ class App {
             }
         } catch (error) {
             console.error('Failed to get current location:', error);
-            Utils.showError(error.message || 'Could not access your location. Please check your browser settings.');
+            window.Utils.showError(error.message || 'Could not access your location. Please check your browser settings.');
         }
     }
 
     // Handle address input with geocoding
     async handleAddressInput(address) {
         try {
-            const results = await LocationService.geocodeAddress(address);
+            const results = await window.LocationService.geocodeAddress(address);
             
             if (results && results.length > 0) {
                 const location = results[0]; // Use first result
@@ -355,7 +355,7 @@ class App {
                 window.MapController.addLocationMarker(location.lat, location.lon, location.displayName);
                 
                 // Save to recent locations
-                LocationService.saveRecentLocation(location);
+                window.LocationService.saveRecentLocation(location);
             }
         } catch (error) {
             console.warn('Geocoding failed:', error);
@@ -427,7 +427,7 @@ class App {
 
     // Load saved preferences from localStorage
     loadSavedPreferences() {
-        const saved = Utils.storage.get('userPreferences');
+        const saved = window.Utils.storage.get('userPreferences');
         
         if (saved) {
             // Update form fields
@@ -462,7 +462,7 @@ class App {
 
     // Save preferences to localStorage
     savePreferences() {
-        Utils.storage.set('userPreferences', this.preferences);
+        window.Utils.storage.set('userPreferences', this.preferences);
     }
 
     // Handle window resize
@@ -471,7 +471,7 @@ class App {
         window.MapController.invalidateSize();
         
         // Update mobile class
-        if (Utils.isMobile()) {
+        if (window.Utils.isMobile()) {
             document.body.classList.add('mobile');
         } else {
             document.body.classList.remove('mobile');
@@ -510,7 +510,7 @@ class App {
     // Export route data (for future sharing functionality)
     exportRoute() {
         if (!this.currentRoute) {
-            Utils.showError('No route to export');
+            window.Utils.showError('No route to export');
             return null;
         }
 
@@ -529,10 +529,10 @@ class App {
             preferences: this.preferences,
             isGenerating: this.isGenerating,
             mapInitialized: window.MapController.isInitialized(),
-            routeGenerator: RouteGenerator.getStats(),
+            routeGenerator: window.RouteGenerator.getStats(),
             locationService: {
-                currentPosition: LocationService.currentPosition,
-                recentLocations: LocationService.getRecentLocations().length
+                currentPosition: window.LocationService.currentPosition,
+                recentLocations: window.LocationService.getRecentLocations().length
             }
         };
     }

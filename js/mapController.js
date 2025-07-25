@@ -62,7 +62,7 @@ class MapController {
             return this.map;
         } catch (error) {
             console.error('Failed to initialize map:', error);
-            Utils.showError('Failed to initialize map. Please refresh the page and try again.');
+            window.Utils.showError('Failed to initialize map. Please refresh the page and try again.');
             return null;
         }
     }
@@ -121,7 +121,7 @@ class MapController {
             const center = this.map.getCenter();
             const zoom = this.map.getZoom();
             
-            Utils.storage.set('mapView', {
+            window.Utils.storage.set('mapView', {
                 lat: center.lat,
                 lng: center.lng,
                 zoom: zoom
@@ -168,7 +168,7 @@ class MapController {
 
     // Load saved map view from localStorage
     loadSavedMapView() {
-        const savedView = Utils.storage.get('mapView');
+        const savedView = window.Utils.storage.get('mapView');
         
         if (savedView && this.map) {
             this.map.setView([savedView.lat, savedView.lng], savedView.zoom);
@@ -220,7 +220,7 @@ class MapController {
 
         try {
             // Create colored segments
-            const segments = PolylineDecoder.createColoredSegments(routeData.coordinates);
+            const segments = window.PolylineDecoder.createColoredSegments(routeData.coordinates);
             
             if (segments.length === 0) {
                 console.warn('No route segments to display');
@@ -239,8 +239,8 @@ class MapController {
 
                 // Add popup with segment information
                 const gradient = segment.gradient;
-                const distance = Utils.formatDistance(segment.distance);
-                const elevationChange = Utils.formatElevation(Math.abs(segment.elevationChange));
+                const distance = window.Utils.formatDistance(segment.distance);
+                const elevationChange = window.Utils.formatElevation(Math.abs(segment.elevationChange));
                 const direction = segment.elevationChange > 0 ? 'uphill' : 'downhill';
                 
                 polyline.bindPopup(`
@@ -271,7 +271,7 @@ class MapController {
             .addTo(this.markersLayer);
 
             // End marker (only if different from start)
-            const isLoop = Utils.calculateDistance(
+            const isLoop = window.Utils.calculateDistance(
                 startCoord[0], startCoord[1], 
                 endCoord[0], endCoord[1]
             ) < 0.1; // Less than 100m apart
@@ -297,7 +297,7 @@ class MapController {
             console.log('Route displayed successfully');
         } catch (error) {
             console.error('Error displaying route:', error);
-            Utils.showError('Failed to display route on map');
+            window.Utils.showError('Failed to display route on map');
         }
     }
 

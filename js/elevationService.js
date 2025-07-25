@@ -132,7 +132,7 @@ class ElevationService {
             const prev = coordinates[i - 1];
             const curr = coordinates[i];
             
-            const segmentDistance = Utils.calculateDistance(
+            const segmentDistance = window.Utils.calculateDistance(
                 prev[0], prev[1], curr[0], curr[1]
             );
             
@@ -184,14 +184,14 @@ class ElevationService {
             const prev = coordinates[i - 1];
             const curr = coordinates[i];
             
-            const distance = Utils.calculateDistance(
+            const distance = window.Utils.calculateDistance(
                 prev[0], prev[1], curr[0], curr[1]
             );
             
             const prevElevation = prev[2] || 0;
             const currElevation = curr[2] || 0;
             const elevationChange = currElevation - prevElevation;
-            const gradient = Utils.calculateGradient(prevElevation, currElevation, distance);
+            const gradient = window.Utils.calculateGradient(prevElevation, currElevation, distance);
             
             totalDistance += distance;
             maxElevation = Math.max(maxElevation, currElevation);
@@ -211,7 +211,7 @@ class ElevationService {
                 startElevation: prevElevation,
                 endElevation: currElevation,
                 cumulativeDistance: totalDistance,
-                color: Utils.getRouteColor(gradient)
+                color: window.Utils.getRouteColor(gradient)
             });
         }
 
@@ -240,14 +240,14 @@ class ElevationService {
             const start = coordinates[i];
             const end = coordinates[i + 1];
             
-            const distance = Utils.calculateDistance(
+            const distance = window.Utils.calculateDistance(
                 start[0], start[1], end[0], end[1]
             );
             
             const startElevation = start[2] || 0;
             const endElevation = end[2] || 0;
-            const gradient = Utils.calculateGradient(startElevation, endElevation, distance);
-            const color = Utils.getRouteColor(gradient);
+            const gradient = window.Utils.calculateGradient(startElevation, endElevation, distance);
+            const color = window.Utils.getRouteColor(gradient);
 
             segments.push({
                 coordinates: [
@@ -271,11 +271,11 @@ class ElevationService {
         const profile = this.calculateElevationProfile(coordinates);
         
         return {
-            distance: Utils.formatDistance(profile.totalDistance),
-            ascent: Utils.formatElevation(profile.totalAscent),
-            descent: Utils.formatElevation(profile.totalDescent),
-            maxElevation: Utils.formatElevation(profile.maxElevation),
-            minElevation: Utils.formatElevation(profile.minElevation),
+            distance: window.Utils.formatDistance(profile.totalDistance),
+            ascent: window.Utils.formatElevation(profile.totalAscent),
+            descent: window.Utils.formatElevation(profile.totalDescent),
+            maxElevation: window.Utils.formatElevation(profile.maxElevation),
+            minElevation: window.Utils.formatElevation(profile.minElevation),
             avgGradient: `${profile.averageGradient.toFixed(1)}%`,
             maxGradient: `${profile.maxGradient.toFixed(1)}%`
         };

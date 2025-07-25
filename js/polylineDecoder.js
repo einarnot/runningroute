@@ -196,7 +196,7 @@ class PolylineDecoder {
             const prev = coordinates[i - 1];
             const curr = coordinates[i];
             
-            const segmentDistance = Utils.calculateDistance(
+            const segmentDistance = window.Utils.calculateDistance(
                 prev[0], prev[1], curr[0], curr[1]
             );
             
@@ -232,13 +232,13 @@ class PolylineDecoder {
             const current = coordinates[i];
             const next = coordinates[i + 1];
             
-            const distance = Utils.calculateDistance(
+            const distance = window.Utils.calculateDistance(
                 current[0], current[1], next[0], next[1]
             );
             
             let gradient = 0;
             if (distance > 0 && current[2] !== undefined && next[2] !== undefined) {
-                gradient = Utils.calculateGradient(current[2], next[2], distance);
+                gradient = window.Utils.calculateGradient(current[2], next[2], distance);
             }
             
             gradients.push({
@@ -246,7 +246,7 @@ class PolylineDecoder {
                 distance,
                 startElevation: current[2] || 0,
                 endElevation: next[2] || 0,
-                color: Utils.getRouteColor(gradient)
+                color: window.Utils.getRouteColor(gradient)
             });
         }
 
@@ -303,7 +303,7 @@ class PolylineDecoder {
             const curr = coordinates[i];
             
             // Distance calculation
-            const distance = Utils.calculateDistance(
+            const distance = window.Utils.calculateDistance(
                 prev[0], prev[1], curr[0], curr[1]
             );
             totalDistance += distance;

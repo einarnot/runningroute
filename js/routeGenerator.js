@@ -10,7 +10,7 @@ class RouteGenerator {
     // Generate multiple route alternatives
     async generateRoutes(preferences) {
         try {
-            Utils.showLoading(true, 'Generating route alternatives...', 'Finding the best paths');
+            window.Utils.showLoading(true, 'Generating route alternatives...', 'Finding the best paths');
 
             // Validate preferences
             const validatedPrefs = this.validatePreferences(preferences);
@@ -22,7 +22,7 @@ class RouteGenerator {
                 throw new Error('No routes could be generated for your preferences');
             }
 
-            Utils.showLoading(true, 'Evaluating routes with AI...', 'Selecting the best option');
+            window.Utils.showLoading(true, 'Evaluating routes with AI...', 'Selecting the best option');
 
             // Evaluate routes with AI
             const evaluatedRoutes = await this.evaluateRoutesWithAI(routes, validatedPrefs);
@@ -37,11 +37,11 @@ class RouteGenerator {
             // Enhance route with elevation data
             const enhancedRoute = await this.enhanceRouteWithElevation(bestRoute);
             
-            Utils.showLoading(false);
+            window.Utils.showLoading(false);
             
             return enhancedRoute;
         } catch (error) {
-            Utils.showLoading(false);
+            window.Utils.showLoading(false);
             console.error('Route generation failed:', error);
             throw error;
         }
@@ -104,7 +104,7 @@ class RouteGenerator {
             const lat = parseFloat(coordMatch[1]);
             const lon = parseFloat(coordMatch[2]);
             
-            if (Utils.isValidCoordinate(lat, lon)) {
+            if (window.Utils.isValidCoordinate(lat, lon)) {
                 return { lat, lon };
             }
         }
@@ -128,7 +128,7 @@ class RouteGenerator {
         let attempt = 0;
         while (attempt < this.maxRetries) {
             try {
-                const response = await Utils.apiCall(`${this.apiBaseUrl}/generate-routes`, {
+                const response = await window.Utils.apiCall(`${this.apiBaseUrl}/generate-routes`, {
                     method: 'POST',
                     body: JSON.stringify(requestData)
                 });
@@ -156,7 +156,7 @@ class RouteGenerator {
     async evaluateRoutesWithAI(routes, preferences) {
         const requestData = {
             routes: routes.map(route => ({
-                id: route.id || Utils.generateId(),
+                id: route.id || window.Utils.generateId(),
                 coordinates: route.coordinates,
                 distance: route.distance,
                 ascent: route.ascent,
@@ -173,7 +173,7 @@ class RouteGenerator {
         let attempt = 0;
         while (attempt < this.maxRetries) {
             try {
-                const response = await Utils.apiCall(`${this.apiBaseUrl}/evaluate-routes`, {
+                const response = await window.Utils.apiCall(`${this.apiBaseUrl}/evaluate-routes`, {
                     method: 'POST',
                     body: JSON.stringify(requestData)
                 });
@@ -238,7 +238,7 @@ class RouteGenerator {
 
             return {
                 ...route,
-                id: route.id || Utils.generateId(),
+                id: route.id || window.Utils.generateId(),
                 aiScore: overallScore,
                 aiReasoning: 'Basic distance and terrain matching (AI unavailable)',
                 distanceAccuracy: distanceScore,
@@ -266,24 +266,24 @@ class RouteGenerator {
     // Enhance route with elevation data
     async enhanceRouteWithElevation(route) {
         try {
-            Utils.showLoading(true, 'Adding elevation data...', 'Analyzing route gradients');
+            window.Utils.showLoading(true, 'Adding elevation data...', 'Analyzing route gradients');
 
             // Process route coordinates with polyline decoder
             let coordinates = route.coordinates;
             
             // If coordinates are not already enhanced, get elevation data
             if (!coordinates.every(coord => coord.length >= 3)) {
-                coordinates = await ElevationService.enhanceRouteWithElevation(coordinates);
+                coordinates = await window.ElevationService.enhanceRouteWithElevation(coordinates);
             }
 
             // Calculate elevation profile
-            const elevationProfile = ElevationService.calculateElevationProfile(coordinates);
+            const elevationProfile = window.ElevationService.calculateElevationProfile(coordinates);
             
             // Create colored segments for visualization
-            const coloredSegments = ElevationService.createColoredSegments(coordinates);
+            const coloredSegments = window.ElevationService.createColoredSegments(coordinates);
             
             // Get terrain classification
-            const terrainClassification = ElevationService.classifyTerrain(coordinates);
+            const terrainClassification = window.ElevationService.classifyTerrain(coordinates);
 
             const enhancedRoute = {
                 ...route,
@@ -292,22 +292,22 @@ class RouteGenerator {
                 coloredSegments,
                 terrainClassification,
                 stats: {
-                    distance: Utils.formatDistance(route.distance),
-                    duration: Utils.formatTime(route.distance),
-                    ascent: Utils.formatElevation(elevationProfile.totalAscent),
-                    descent: Utils.formatElevation(elevationProfile.totalDescent),
-                    maxElevation: Utils.formatElevation(elevationProfile.maxElevation),
-                    minElevation: Utils.formatElevation(elevationProfile.minElevation),
+                    distance: window.Utils.formatDistance(route.distance),
+                    duration: window.Utils.formatTime(route.distance),
+                    ascent: window.Utils.formatElevation(elevationProfile.totalAscent),
+                    descent: window.Utils.formatElevation(elevationProfile.totalDescent),
+                    maxElevation: window.Utils.formatElevation(elevationProfile.maxElevation),
+                    minElevation: window.Utils.formatElevation(elevationProfile.minElevation),
                     avgGradient: `${elevationProfile.averageGradient.toFixed(1)}%`,
                     maxGradient: `${elevationProfile.maxGradient.toFixed(1)}%`
                 }
             };
 
-            Utils.showLoading(false);
+            window.Utils.showLoading(false);
             return enhancedRoute;
         } catch (error) {
             console.error('Failed to enhance route with elevation:', error);
-            Utils.showLoading(false);
+            window.Utils.showLoading(false);
             
             // Return route without elevation enhancement
             return {
@@ -316,8 +316,8 @@ class RouteGenerator {
                 coloredSegments: [],
                 terrainClassification: { level: 'unknown', difficulty: 0 },
                 stats: {
-                    distance: Utils.formatDistance(route.distance),
-                    duration: Utils.formatTime(route.distance),
+                    distance: window.Utils.formatDistance(route.distance),
+                    duration: window.Utils.formatTime(route.distance),
                     ascent: '0m',
                     descent: '0m',
                     maxElevation: '0m',
@@ -370,13 +370,13 @@ class RouteGenerator {
             version: '1.0'
         };
 
-        Utils.storage.set(`route_${cacheKey}`, cacheData);
+        window.Utils.storage.set(`route_${cacheKey}`, cacheData);
     }
 
     // Get cached route
     getCachedRoute(preferences) {
         const cacheKey = this.generateCacheKey(preferences);
-        const cached = Utils.storage.get(`route_${cacheKey}`);
+        const cached = window.Utils.storage.get(`route_${cacheKey}`);
 
         if (cached && cached.timestamp) {
             const cacheAge = Date.now() - new Date(cached.timestamp).getTime();

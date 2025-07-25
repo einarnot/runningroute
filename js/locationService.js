@@ -141,7 +141,7 @@ class LocationService {
 
     // Reverse geocode coordinates to address
     async reverseGeocode(lat, lon) {
-        if (!Utils.isValidCoordinate(lat, lon)) {
+        if (!window.Utils.isValidCoordinate(lat, lon)) {
             throw new Error('Invalid coordinates provided');
         }
 
@@ -252,28 +252,28 @@ class LocationService {
                 recentLocations.splice(10);
             }
 
-            Utils.storage.set('recentLocations', recentLocations);
+            window.Utils.storage.set('recentLocations', recentLocations);
         }
     }
 
     // Get recent locations from localStorage
     getRecentLocations() {
-        return Utils.storage.get('recentLocations', []);
+        return window.Utils.storage.get('recentLocations', []);
     }
 
     // Clear recent locations
     clearRecentLocations() {
-        Utils.storage.remove('recentLocations');
+        window.Utils.storage.remove('recentLocations');
     }
 
     // Get user's preferred location (last used)
     getPreferredLocation() {
-        return Utils.storage.get('preferredLocation', null);
+        return window.Utils.storage.get('preferredLocation', null);
     }
 
     // Save user's preferred location
     savePreferredLocation(location) {
-        Utils.storage.set('preferredLocation', {
+        window.Utils.storage.set('preferredLocation', {
             ...location,
             timestamp: new Date().toISOString()
         });
@@ -311,16 +311,16 @@ class LocationService {
 
     // Validate coordinates are within reasonable bounds (roughly Earth)
     validateCoordinates(lat, lon) {
-        return Utils.isValidCoordinate(lat, lon);
+        return window.Utils.isValidCoordinate(lat, lon);
     }
 
     // Get distance from current location
     getDistanceFromCurrent(lat, lon) {
-        if (!this.currentPosition || !Utils.isValidCoordinate(lat, lon)) {
+        if (!this.currentPosition || !window.Utils.isValidCoordinate(lat, lon)) {
             return null;
         }
 
-        return Utils.calculateDistance(
+        return window.Utils.calculateDistance(
             this.currentPosition.lat,
             this.currentPosition.lon,
             lat,
