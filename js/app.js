@@ -19,6 +19,11 @@ class App {
         try {
             console.log('Initializing Route Generator v5...');
             
+            // Check if MapController is available
+            if (!window.MapController) {
+                throw new Error('MapController not loaded');
+            }
+            
             // Initialize map
             MapController.initializeMap();
             
@@ -32,7 +37,9 @@ class App {
             this.loadSavedPreferences();
             
             // Add elevation legend to map
-            MapController.addElevationLegend();
+            if (MapController && MapController.addElevationLegend) {
+                MapController.addElevationLegend();
+            }
             
             console.log('App initialized successfully');
         } catch (error) {
@@ -183,6 +190,7 @@ class App {
 
         if (centerBtn) {
             centerBtn.addEventListener('click', () => {
+                if (!MapController) return;
                 if (this.currentRoute) {
                     MapController.centerOnRoute();
                 } else {
@@ -193,7 +201,9 @@ class App {
 
         if (fullscreenBtn) {
             fullscreenBtn.addEventListener('click', () => {
-                MapController.toggleFullscreen();
+                if (MapController && MapController.toggleFullscreen) {
+                    MapController.toggleFullscreen();
+                }
             });
         }
     }
@@ -227,7 +237,9 @@ class App {
         // Handle orientation changes
         window.addEventListener('orientationchange', () => {
             setTimeout(() => {
-                MapController.invalidateSize();
+                if (MapController && MapController.invalidateSize) {
+                    MapController.invalidateSize();
+                }
             }, 500);
         });
     }
@@ -282,7 +294,9 @@ class App {
                 this.currentRoute = route;
                 
                 // Display route on map
-                MapController.displayRoute(route);
+                if (MapController && MapController.displayRoute) {
+                    MapController.displayRoute(route);
+                }
                 
                 // Update route info panel
                 this.updateRouteInfoPanel(route);
@@ -321,8 +335,10 @@ class App {
                 }
 
                 // Center map on location
-                MapController.map.setView([position.lat, position.lon], 15);
-                MapController.addLocationMarker(position.lat, position.lon, 'Your Location', true);
+                if (MapController && MapController.map) {
+                    MapController.map.setView([position.lat, position.lon], 15);
+                    MapController.addLocationMarker(position.lat, position.lon, 'Your Location', true);
+                }
 
                 // Try to get readable address
                 try {
@@ -351,8 +367,10 @@ class App {
                 const location = results[0]; // Use first result
                 
                 // Update map
-                MapController.map.setView([location.lat, location.lon], 15);
-                MapController.addLocationMarker(location.lat, location.lon, location.displayName);
+                if (MapController && MapController.map) {
+                    MapController.map.setView([location.lat, location.lon], 15);
+                    MapController.addLocationMarker(location.lat, location.lon, location.displayName);
+                }
                 
                 // Save to recent locations
                 LocationService.saveRecentLocation(location);
@@ -468,7 +486,9 @@ class App {
     // Handle window resize
     handleWindowResize() {
         // Invalidate map size
-        MapController.invalidateSize();
+        if (MapController && MapController.invalidateSize) {
+            MapController.invalidateSize();
+        }
         
         // Update mobile class
         if (Utils.isMobile()) {
@@ -498,7 +518,9 @@ class App {
     // Clear current route
     clearRoute() {
         this.currentRoute = null;
-        MapController.clearRoute();
+        if (MapController && MapController.clearRoute) {
+            MapController.clearRoute();
+        }
         
         // Hide route info panel
         const routeInfo = document.getElementById('routeInfo');
@@ -528,7 +550,7 @@ class App {
             currentRoute: !!this.currentRoute,
             preferences: this.preferences,
             isGenerating: this.isGenerating,
-            mapInitialized: MapController.isInitialized(),
+            mapInitialized: MapController ? MapController.isInitialized() : false,
             routeGenerator: RouteGenerator.getStats(),
             locationService: {
                 currentPosition: LocationService.currentPosition,
