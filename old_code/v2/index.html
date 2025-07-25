@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Running Route Generator</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Running Route Generator</h1>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label for="distance">Distance: <span id="distance-value">5</span> km</label>
+                <input type="range" id="distance" min="1" max="20" value="5" step="0.5">
+            </div>
+            
+            <div class="control-group">
+                <label>Route Type:</label>
+                <div class="radio-group">
+                    <label>
+                        <input type="radio" name="route-type" value="flat" checked>
+                        Flat Route
+                    </label>
+                    <label>
+                        <input type="radio" name="route-type" value="hills">
+                        Rolling Hills
+                    </label>
+                </div>
+            </div>
+            
+            <button id="generate-routes" class="btn-primary">Generate Routes</button>
+        </div>
+        
+        <div class="loading" id="loading" style="display: none;">
+            <div class="spinner"></div>
+            <p>Generating routes...</p>
+        </div>
+        
+        <div class="routes-container" id="routes-container" style="display: none;">
+            <h2>Your Route</h2>
+            
+            <div class="route-info" id="route-info">
+                <div class="route-stats">
+                    <span class="stat">
+                        <strong>Distance:</strong> <span id="current-distance">-</span>
+                    </span>
+                    <span class="stat">
+                        <strong>Elevation:</strong> <span id="current-elevation">-</span>
+                    </span>
+                    <span class="stat">
+                        <strong>Duration:</strong> <span id="current-duration">-</span>
+                    </span>
+                    <span class="stat">
+                        <strong>Type:</strong> <span id="current-type">-</span>
+                    </span>
+                </div>
+            </div>
+            
+            <div id="map"></div>
+        </div>
+    </div>
+    
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Simple polyline decoder (based on Google's algorithm)
+        window.polyline = {
+            decode: function(str, precision) {
+                var index = 0,
+                    lat = 0,
+                    lng = 0,
+                    coordinates = [],
+                    shift = 0,
+                    result = 0,
+                    byte = null,
+                    latitude_change,
+                    longitude_change,
+                    factor = Math.pow(10, precision || 5);
+
+                while (index < str.length) {
+                    byte = null;
+                    shift = 0;
+                    result = 0;
+
+                    do {
+                        byte = str.charCodeAt(index++) - 63;
+                        result |= (byte & 0x1f) << shift;
+                        shift += 5;
+                    } while (byte >= 0x20);
+
+                    latitude_change = ((result & 1) ? ~(result >> 1) : (result >> 1));
+
+                    shift = result = 0;
+
+                    do {
+                        byte = str.charCodeAt(index++) - 63;
+                        result |= (byte & 0x1f) << shift;
+                        shift += 5;
+                    } while (byte >= 0x20);
+
+                    longitude_change = ((result & 1) ? ~(result >> 1) : (result >> 1));
+
+                    lat += latitude_change;
+                    lng += longitude_change;
+
+                    coordinates.push([lat / factor, lng / factor]);
+                }
+
+                return coordinates;
+            }
+        };
+    </script>
+    <script src="script.js"></script>
+</body>
+</html>

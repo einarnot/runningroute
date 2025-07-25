@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Elevation Analysis</title>
+</head>
+<body>
+    <div id="test-results"></div>
+    
+    <script>
+        // Copy the functions from script.js for testing
+        function decodePolyline(encoded, is3d = true) {
+            const coordinates = [];
+            let index = 0;
+            let lat = 0;
+            let lng = 0;
+            let z = 0;
+
+            while (index < encoded.length) {
+                let b;
+                let shift = 0;
+                let result = 0;
+                do {
+                    b = encoded.charCodeAt(index++) - 63;
+                    result |= (b & 0x1f) << shift;
+                    shift += 5;
+                } while (b >= 0x20);
+                const dlat = ((result & 1) !== 0 ? ~(result >> 1) : (result >> 1));
+                lat += dlat;
+
+                shift = 0;
+                result = 0;
+                do {
+                    b = encoded.charCodeAt(index++) - 63;
+                    result |= (b & 0x1f) << shift;
+                    shift += 5;
+                } while (b >= 0x20);
+                const dlng = ((result & 1) !== 0 ? ~(result >> 1) : (result >> 1));
+                lng += dlng;
+
+                if (is3d) {
+                    shift = 0;
+                    result = 0;
+                    do {
+                        b = encoded.charCodeAt(index++) - 63;
+                        result |= (b & 0x1f) << shift;
+                        shift += 5;
+                    } while (b >= 0x20);
+                    const dz = ((result & 1) !== 0 ? ~(result >> 1) : (result >> 1));
+                    z += dz;
+                    
+                    coordinates.push([lat / 1e5, lng / 1e5, Math.round(z * 1e-2 * 10) / 10]);
+                } else {
+                    coordinates.push([lat / 1e5, lng / 1e5]);
+                }
+            }
+
+            return coordinates;
+        }
+
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371000; // Earth's radius in meters
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+
+        function findSteepestSection(coordinates) {
+            let steepestGrade = 0;
+            let steepestPoint = null;
+            
+            // Use multiple fixed segment sizes that work well for different route lengths
+            // This covers short steep sections (3-5 points) to longer gradual climbs (20-30 points)
+            const segmentSizes = [3, 5, 8, 10, 15, 20, 25, 30];
+            
+            console.log('Analyzing route segments:', coordinates.length, 'points with segment sizes:', segmentSizes);
+            
+            // Try different segment sizes to find the most significant gradient
+            for (const segmentSize of segmentSizes) {
+                // Skip if segment size is too large for the route
+                if (segmentSize >= coordinates.length) continue;
+                
+                // Use smaller steps to not miss steep sections
+                const stepSize = Math.max(1, Math.floor(segmentSize / 4));
+                
+                for (let i = 0; i < coordinates.length - segmentSize; i += stepSize) {
+                    const startCoord = coordinates[i];
+                    const endCoord = coordinates[i + segmentSize];
+                    
+                    if (startCoord && endCoord && startCoord.length === 3 && endCoord.length === 3) {
+                        // Calculate distance between points using Haversine formula
+                        const distance = calculateDistance(
+                            startCoord[0], startCoord[1],
+                            endCoord[0], endCoord[1]
+                        );
+                        
+                        // Skip segments that are too short to give meaningful gradients
+                        if (distance < 5) continue; // Minimum 5 meters
+                        
+                        // Calculate elevation change
+                        const elevationChange = endCoord[2] - startCoord[2];
+                        
+                        // Skip very small elevation changes to avoid noise
+                        if (Math.abs(elevationChange) < 0.5) continue; // Minimum 0.5 meter elevation change
+                        
+                        // Calculate grade percentage
+                        const grade = (elevationChange / distance) * 100;
+                        
+                        // Debug logging for first few calculations with smallest segment size
+                        if (i < 5 && segmentSize === segmentSizes[0]) {
+                            console.log(`Segment ${i} (size ${segmentSize}): distance=${distance.toFixed(1)}m, elevation change=${elevationChange.toFixed(1)}m, grade=${grade.toFixed(2)}%`);
+                        }
+                        
+                        // Track steepest section (both uphill and downhill)
+                        // Only consider grades that are realistic (< 50% for walking routes)
+                        if (Math.abs(grade) > Math.abs(steepestGrade) && Math.abs(grade) < 50) {
+                            steepestGrade = grade;
+                            steepestPoint = {
+                                lat: startCoord[0],
+                                lng: startCoord[1],
+                                elevation: startCoord[2],
+                                grade: grade,
+                                distance: distance,
+                                elevationChange: elevationChange,
+                                segmentSize: segmentSize,
+                                startIndex: i,
+                                endIndex: i + segmentSize
+                            };
+                        }
+                    }
+                }
+            }
+            
+            console.log('Steepest section found:', steepestPoint);
+            return steepestPoint;
+        }
+
+        // Load and test the sample data
+        fetch('sample-elevation-response.json')
+            .then(response => response.json())
+            .then(data => {
+                const route = data.routes[0];
+                const coordinates = decodePolyline(route.geometry);
+                
+                console.log('Testing with current findSteepestSection function:');
+                const steepest = findSteepestSection(coordinates);
+                
+                const resultsDiv = document.getElementById('test-results');
+                resultsDiv.innerHTML = `
+                    <h3>Test Results</h3>
+                    <p><strong>Total coordinates:</strong> ${coordinates.length}</p>
+                    <p><strong>Current function result:</strong></p>
+                    <ul>
+                        <li>Grade: ${steepest ? steepest.grade.toFixed(2) + '%' : 'Not found'}</li>
+                        <li>Distance: ${steepest ? steepest.distance.toFixed(1) + 'm' : 'N/A'}</li>
+                        <li>Elevation change: ${steepest ? steepest.elevationChange.toFixed(1) + 'm' : 'N/A'}</li>
+                        <li>Segment size: ${steepest ? steepest.segmentSize + ' points' : 'N/A'}</li>
+                        <li>Position: ${steepest ? `[${steepest.lat.toFixed(6)}, ${steepest.lng.toFixed(6)}]` : 'N/A'}</li>
+                        <li>Elevation: ${steepest ? steepest.elevation + 'm' : 'N/A'}</li>
+                    </ul>
+                    <p><strong>Expected from manual analysis:</strong></p>
+                    <ul>
+                        <li>Best match: 24.69% grade (14.7m over 59.5m) with segment size 5</li>
+                        <li>Or: 12.46% grade (26.0m over 208.7m) with larger segments</li>
+                    </ul>
+                `;
+            })
+            .catch(error => {
+                console.error('Error loading data:', error);
+                document.getElementById('test-results').innerHTML = '<p>Error loading test data</p>';
+            });
+    </script>
+</body>
+</html>

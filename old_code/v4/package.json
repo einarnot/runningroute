@@ -1,0 +1,20 @@
+{
+  "name": "route-generator",
+  "version": "1.0.0",
+  "description": "Automatic running route generator with elevation support",
+  "main": "index.html",
+  "scripts": {
+    "dev": "http-server -p 3000 -c-1",
+    "build": "echo 'Static build - no compilation needed'",
+    "start": "http-server -p 8080"
+  },
+  "dependencies": {
+    "leaflet": "^1.9.4"
+  },
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  },
+  "keywords": ["running", "routes", "maps", "elevation", "openrouteservice"],
+  "author": "Route Generator",
+  "license": "MIT"
+}

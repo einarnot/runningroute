@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Route Generator</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#2563eb">
+    <meta name="description" content="Generate running routes with elevation data">
+    <link rel="manifest" href="manifest.json">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <h1>Route Generator</h1>
+        <button id="locationBtn" class="location-btn" aria-label="Use current location">
+            📍
+        </button>
+    </header>
+    
+    <!-- Map Container -->
+    <div id="map" class="map-container"></div>
+    
+    <!-- Input Panel (Slide-up drawer) -->
+    <div id="inputPanel" class="input-panel">
+        <div class="panel-header">
+            <div class="panel-handle"></div>
+            <h2>Generate Route</h2>
+        </div>
+        
+        <div class="panel-content">
+            <div class="input-group">
+                <label for="distance">Distance: <span id="distanceValue">5</span> km</label>
+                <input type="range" id="distance" min="1" max="50" value="5" class="slider">
+            </div>
+            
+            <div class="input-group">
+                <label>Terrain Preference:</label>
+                <div class="terrain-toggle">
+                    <input type="radio" id="flat" name="terrain" value="flat" checked>
+                    <label for="flat" class="terrain-option">🏞️ Flat</label>
+                    
+                    <input type="radio" id="hilly" name="terrain" value="hilly">
+                    <label for="hilly" class="terrain-option">⛰️ Hilly</label>
+                </div>
+            </div>
+            
+            <button id="generateBtn" class="generate-btn">Generate Route</button>
+        </div>
+    </div>
+    
+    <!-- Route Stats Overlay -->
+    <div id="routeStats" class="route-stats hidden">
+        <div class="stats-content">
+            <div class="stat-item">
+                <span class="stat-label">Distance</span>
+                <span id="statDistance" class="stat-value">-</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Elevation</span>
+                <span id="statElevation" class="stat-value">-</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Steepest</span>
+                <span id="statSteepest" class="stat-value">-</span>
+            </div>
+        </div>
+        <button id="closeStats" class="close-stats">×</button>
+    </div>
+    
+    <!-- Loading Indicator -->
+    <div id="loading" class="loading hidden">
+        <div class="spinner"></div>
+        <p>Generating route...</p>
+    </div>
+    
+    <!-- Error Message -->
+    <div id="errorMessage" class="error-message hidden">
+        <p id="errorText"></p>
+        <button id="closeError">×</button>
+    </div>
+    
+    <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="js/polyline.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/polylineUtils.js"></script>
+    <script src="js/routeService.js"></script>
+    <script src="js/mapComponent.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Route Generator</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Route Generator</h1>
+            <p>Find the perfect running route</p>
+        </header>
+        
+        <div class="controls">
+            <div class="distance-control">
+                <label for="distance-slider">Distance (km)</label>
+                <input type="range" id="distance-slider" min="2" max="50" value="5" step="0.5">
+                <span id="distance-value">5.0 km</span>
+                <small style="color: #666; font-size: 0.9rem; margin-left: 10px;">round trip</small>
+            </div>
+            
+            <button id="find-route" class="btn-primary">Find Route</button>
+            <button id="get-location" class="btn-secondary">Use My Location</button>
+            <button id="reset-start" class="btn-secondary" style="display: none;">Reset to My Location</button>
+        </div>
+        
+        <div class="route-info" id="route-info" style="display: none;">
+            <div class="route-stats-horizontal">
+                <div class="distance-section">
+                    <div class="stat">
+                        <span class="label">Distance</span>
+                        <span class="value" id="route-distance">-</span>
+                    </div>
+                </div>
+                
+                <div class="elevation-section">
+                    <div class="elevation-stats-horizontal">
+                        <div class="elevation-stat-compact gain">
+                            <span class="icon">▲</span>
+                            <div class="elevation-content">
+                                <span class="label">Trip Gain</span>
+                                <span class="value" id="trip-elevation-gain">-</span>
+                            </div>
+                        </div>
+                        <div class="elevation-stat-compact loss">
+                            <span class="icon">▼</span>
+                            <div class="elevation-content">
+                                <span class="label">Trip Loss</span>
+                                <span class="value" id="trip-elevation-loss">-</span>
+                            </div>
+                        </div>
+                        <div class="elevation-stat-compact gain">
+                            <span class="icon">▲</span>
+                            <div class="elevation-content">
+                                <span class="label">Return Gain</span>
+                                <span class="value" id="return-elevation-gain">-</span>
+                            </div>
+                        </div>
+                        <div class="elevation-stat-compact loss">
+                            <span class="icon">▼</span>
+                            <div class="elevation-content">
+                                <span class="label">Return Loss</span>
+                                <span class="value" id="return-elevation-loss">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="map-container">
+            <div class="debug-toggle-container">
+                <label class="debug-checkbox-label">
+                    <input type="checkbox" id="debug-toggle" />
+                    <span class="debug-label-text">Debug</span>
+                </label>
+            </div>
+            <div id="map"></div>
+        </div>
+        
+        <div class="loading" id="loading" style="display: none;">
+            <div class="spinner"></div>
+            <p>Finding your perfect route...</p>
+        </div>
+    </div>
+    
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

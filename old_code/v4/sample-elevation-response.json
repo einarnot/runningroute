@@ -1,0 +1,270 @@
+{
+    "bbox": [
+        11.118187,
+        63.471771,
+        77,
+        11.150954,
+        63.480901,
+        213.24
+    ],
+    "routes": [
+        {
+            "summary": {
+                "distance": 4710.2,
+                "duration": 3391.4,
+                "ascent": 151.3,
+                "descent": 151.3
+            },
+            "segments": [
+                {
+                    "distance": 2355.1,
+                    "duration": 1695.7,
+                    "steps": [
+                        {
+                            "distance": 17,
+                            "duration": 12.3,
+                            "type": 11,
+                            "instruction": "Head west on Johan Myrvangs vei",
+                            "name": "Johan Myrvangs vei",
+                            "way_points": [
+                                0,
+                                1
+                            ]
+                        },
+                        {
+                            "distance": 30.4,
+                            "duration": 21.9,
+                            "type": 0,
+                            "instruction": "Turn left onto Johan Myrvangs vei",
+                            "name": "Johan Myrvangs vei",
+                            "way_points": [
+                                1,
+                                2
+                            ]
+                        },
+                        {
+                            "distance": 43.7,
+                            "duration": 31.5,
+                            "type": 1,
+                            "instruction": "Turn right onto Johan Myrvangs vei",
+                            "name": "Johan Myrvangs vei",
+                            "way_points": [
+                                2,
+                                3
+                            ]
+                        },
+                        {
+                            "distance": 44.8,
+                            "duration": 32.3,
+                            "type": 0,
+                            "instruction": "Turn left",
+                            "name": "-",
+                            "way_points": [
+                                3,
+                                5
+                            ]
+                        },
+                        {
+                            "distance": 337.6,
+                            "duration": 243.1,
+                            "type": 0,
+                            "instruction": "Turn left",
+                            "name": "-",
+                            "way_points": [
+                                5,
+                                23
+                            ]
+                        },
+                        {
+                            "distance": 4.8,
+                            "duration": 3.4,
+                            "type": 0,
+                            "instruction": "Turn left onto Kverndalsvegen",
+                            "name": "Kverndalsvegen",
+                            "way_points": [
+                                23,
+                                24
+                            ]
+                        },
+                        {
+                            "distance": 1876.9,
+                            "duration": 1351.3,
+                            "type": 3,
+                            "instruction": "Turn sharp right onto Kverndalsvegen",
+                            "name": "Kverndalsvegen",
+                            "way_points": [
+                                24,
+                                87
+                            ]
+                        },
+                        {
+                            "distance": 0,
+                            "duration": 0,
+                            "type": 10,
+                            "instruction": "Arrive at Kverndalsvegen, on the right",
+                            "name": "-",
+                            "way_points": [
+                                87,
+                                87
+                            ]
+                        }
+                    ],
+                    "ascent": 138.77999877929688,
+                    "descent": 12.538002014160156
+                },
+                {
+                    "distance": 2355.1,
+                    "duration": 1695.7,
+                    "steps": [
+                        {
+                            "distance": 1876.9,
+                            "duration": 1351.3,
+                            "type": 11,
+                            "instruction": "Head west",
+                            "name": "-",
+                            "way_points": [
+                                87,
+                                150
+                            ]
+                        },
+                        {
+                            "distance": 4.8,
+                            "duration": 3.4,
+                            "type": 2,
+                            "instruction": "Turn sharp left onto Kverndalsvegen",
+                            "name": "Kverndalsvegen",
+                            "way_points": [
+                                150,
+                                151
+                            ]
+                        },
+                        {
+                            "distance": 167.9,
+                            "duration": 120.9,
+                            "type": 1,
+                            "instruction": "Turn right",
+                            "name": "-",
+                            "way_points": [
+                                151,
+                                157
+                            ]
+                        },
+                        {
+                            "distance": 169.7,
+                            "duration": 122.2,
+                            "type": 13,
+                            "instruction": "Keep right",
+                            "name": "-",
+                            "way_points": [
+                                157,
+                                169
+                            ]
+                        },
+                        {
+                            "distance": 44.8,
+                            "duration": 32.3,
+                            "type": 1,
+                            "instruction": "Turn right",
+                            "name": "-",
+                            "way_points": [
+                                169,
+                                171
+                            ]
+                        },
+                        {
+                            "distance": 43.7,
+                            "duration": 31.5,
+                            "type": 1,
+                            "instruction": "Turn right onto Johan Myrvangs vei",
+                            "name": "Johan Myrvangs vei",
+                            "way_points": [
+                                171,
+                                172
+                            ]
+                        },
+                        {
+                            "distance": 30.4,
+                            "duration": 21.9,
+                            "type": 0,
+                            "instruction": "Turn left onto Johan Myrvangs vei",
+                            "name": "Johan Myrvangs vei",
+                            "way_points": [
+                                172,
+                                173
+                            ]
+                        },
+                        {
+                            "distance": 17,
+                            "duration": 12.3,
+                            "type": 1,
+                            "instruction": "Turn right onto Johan Myrvangs vei",
+                            "name": "Johan Myrvangs vei",
+                            "way_points": [
+                                173,
+                                174
+                            ]
+                        },
+                        {
+                            "distance": 0,
+                            "duration": 0,
+                            "type": 10,
+                            "instruction": "Arrive at Johan Myrvangs vei, on the left",
+                            "name": "-",
+                            "way_points": [
+                                174,
+                                174
+                            ]
+                        }
+                    ],
+                    "ascent": 12.538002014160156,
+                    "descent": 138.77999877929688
+                }
+            ],
+            "bbox": [
+                11.118187,
+                63.471771,
+                77,
+                11.150954,
+                63.480901,
+                213.24
+            ],
+            "geometry": "gdlbKwvzbAw~OBbA?t@O?JlD~p@`AO?LCnKEsA}JB[@H]@FO@PI?tAEBPG@JI@P_@@Li@@Fo@B@q@g@GcAaUKc@oAKWyAcCaCsCcA}AoFIGwzAAP?OQ?a@[?k@@?SV?aAlB?MJ?]D?]K?SW?O_@?UoA?KsA?OwA_{AMk@uLo@sByEOs@UIq@i@AsAo@FoCoD@y@CImA{g@QcA}g@y@iBsR_@qAiKsAoGcSOw@gFc@iBoB]oBZo@eEk[YaAs~Ao@mA{h@GS?u@q@?a@m@?]q@?i@eB?]eC?K{A??_@?WkD_G?gG}GCwAwDi@sKeUKwCkFW}CuCWkEgDWoFF?k@aLSs@wqAWm@~DYg@~FMc@cBSsAsAi@cFeNe@kHiUGcDaJEm@eEIw@uAOy@uDSo@oA}@_BkDaA}Eui@SsBiLRrBhL`A|Eti@|@~AjDRn@nANx@tDHv@tADl@dEFbD`Jd@jHhUh@bFdNRrArALb@bBXf@_GVl@_ERr@vqA?j@`LVnFGVjEfDV|CtCJvCjFh@rKdUBvAvD?fG|GVjD~F?^?JzA?\\dC?h@dB?\\p@?`@l@?t@p@?FR?n@lAzh@X`Ar~An@dEj[\\nB[b@hBnBNv@fFrAnGbS^pAhKx@hBrRPbA|g@HlAzg@Ax@BGnCnD@rAn@Hp@h@Nr@Tn@rBxELj@tLNvA~zAJrA?TnA?N^?RV?\\J?\\E?LK?`AmB?RW?j@A?`@Z?NP?@Q?HFvzAbA|AnFbC`CrCJVxAJb@nAFbA`UAp@f@Gn@CMh@AQ^AKHAQFAuADCQH?GNAI\\ACZADrA|JMBoKaAN?KmD_q@u@N?CcA?",
+            "way_points": [
+                0,
+                87,
+                174
+            ]
+        }
+    ],
+    "metadata": {
+        "attribution": "openrouteservice.org | OpenStreetMap contributors",
+        "service": "routing",
+        "timestamp": 1752210936713,
+        "query": {
+            "coordinates": [
+                [
+                    11.119674821563093,
+                    63.47355070890484
+                ],
+                [
+                    11.151359442628312,
+                    63.48044234962057
+                ],
+                [
+                    11.119674821563093,
+                    63.47355070890484
+                ]
+            ],
+            "profile": "foot-walking",
+            "profileName": "foot-walking",
+            "format": "json",
+            "elevation": true
+        },
+        "engine": {
+            "version": "9.3.0",
+            "build_date": "2025-06-06T15:39:25Z",
+            "graph_date": "2025-06-24T15:58:53Z",
+            "osm_date": "1970-01-01T00:00:00Z"
+        }
+    }
+}

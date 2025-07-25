@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Running Route Generator</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏃‍♂️ Running Route Generator</h1>
+        </header>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label for="distance">Target Distance (km):</label>
+                <input type="number" id="distance" min="1" max="50" value="5" step="0.5">
+            </div>
+            
+            <div class="control-group">
+                <label for="routeType">Route Type:</label>
+                <select id="routeType">
+                    <option value="loop">Loop (return to start)</option>
+                    <option value="out-back">Out and back</option>
+                    <option value="point-to-point">Point to point</option>
+                </select>
+            </div>
+            
+            <button id="generateRoute" class="btn-primary">Generate Route</button>
+            <button id="findLocation" class="btn-secondary">📍 Use My Location</button>
+        </div>
+        
+        <div class="route-info">
+            <div class="info-item">
+                <span class="label">Distance:</span>
+                <span id="routeDistance">--</span>
+            </div>
+            <div class="info-item">
+                <span class="label">Est. Time:</span>
+                <span id="routeTime">--</span>
+            </div>
+            <div class="info-item">
+                <span class="label">Elevation:</span>
+                <span id="routeElevation">--</span>
+            </div>
+        </div>
+        
+        <div id="map"></div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Generating your perfect route...</p>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
