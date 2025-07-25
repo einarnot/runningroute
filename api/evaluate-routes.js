@@ -52,7 +52,7 @@ async function evaluateWithAI(routes, preferences) {
       messages: [{
         role: 'system',
         content: `You are a running route expert. Evaluate routes and return ONLY a valid JSON array with this exact format:
-[{"routeId": 0, "score": 85, "reasoning": "Good distance match", "criteria": {"distanceAccuracy": 0.9, "terrainMatch": 0.8, "safetyScore": 0.7, "scenicValue": 0.6, "navigationEase": 0.8}}]
+[{"routeId": 0, "score": 0.85, "reasoning": "Good distance match", "criteria": {"distanceAccuracy": 0.9, "terrainMatch": 0.8, "safetyScore": 0.7, "scenicValue": 0.6, "navigationEase": 0.8}}]
 Do not use markdown formatting or code blocks. Return only the JSON array.`
       }, {
         role: 'user',
@@ -66,7 +66,7 @@ Routes data: ${JSON.stringify(routes.map((r, i) => ({
   duration: r.duration
 })))}
 
-Return scores 0-100 and criteria scores 0-1.0 for each route.`
+Return scores 0-1.0 and criteria scores 0-1.0 for each route.`
       }],
       temperature: 0.1,
       max_tokens: 2000
@@ -151,8 +151,8 @@ function evaluateWithFallback(routes, preferences) {
       scenicValue * weights.scenicValue +
       navigationEase * weights.navigationEase;
     
-    // Convert to 0-100 scale
-    const finalScore = Math.round(weightedScore * 100);
+    // Keep score in 0-1 scale as expected by frontend
+    const finalScore = Math.round(weightedScore * 100) / 100;
     
     // Generate reasoning
     let reasoning = `Distance: ${route.distance.toFixed(1)}km (target: ${targetDistance}km)`;
